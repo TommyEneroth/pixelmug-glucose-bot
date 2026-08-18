@@ -1,0 +1,17 @@
+# secrets & local config
+.env
+.env.local
+
+# deps
+node_modules/
+
+# third-party SDK (fetched via `bun run setup`, not redistributed here)
+sdk/*.js
+sdk/*.ts
+
+# rendered output
+out/
+
+# misc
+.DS_Store
+*.log

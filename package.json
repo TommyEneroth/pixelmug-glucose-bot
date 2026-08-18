@@ -1,0 +1,17 @@
+{
+  "name": "pixelmug-glucose-bot",
+  "version": "0.1.0",
+  "description": "Turn a PixelMug P1 into a live blood-glucose VU-meter (Dexcom Share -> 32x16 GIF -> Bubble bot).",
+  "type": "module",
+  "scripts": {
+    "setup": "bash scripts/fetch-sdk.sh",
+    "dryrun": "bun run src/dryrun.ts",
+    "bot": "bun run src/glucoseBot.ts"
+  },
+  "dependencies": {
+    "gifenc": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
