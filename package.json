@@ -6,7 +6,9 @@
   "scripts": {
     "setup": "bash scripts/fetch-sdk.sh",
     "dryrun": "bun run src/dryrun.ts",
-    "bot": "bun run src/glucoseBot.ts"
+    "serve": "bun run src/serve.ts",
+    "bot": "bun run src/glucoseBot.ts",
+    "test": "bun test"
   },
   "dependencies": {
     "gifenc": "^1.0.3"

@@ -46,6 +46,19 @@ bun run dryrun       # render sample + live GIFs to ./out and validate them — 
 `dryrun` uses synthetic curves out of the box. Drop real Dexcom creds into `.env` and it
 renders your live glucose instead.
 
+```bash
+bun test             # 20 tests: mug-GIF constraints, colour zones, stale handling, trend
+```
+
+### Hosting the GIF (so the mug can fetch it)
+
+```bash
+bun run serve                                   # serve ./out on :8787
+cloudflared tunnel --url http://localhost:8787  # -> public URL for GIF_PUBLIC_BASE_URL
+```
+
+See [HOSTING.md](HOSTING.md) for tailscale-funnel and bucket options.
+
 ### Running against a real mug
 
 ```bash

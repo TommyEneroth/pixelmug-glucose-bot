@@ -45,6 +45,9 @@ const I = {
   high: 6, highDim: 7, white: 8, gray: 9, grayDim: 10,
 };
 
+/** Palette index names — exported so tests can assert individual pixels. */
+export const INDEX = I;
+
 function fullIdx(z: string) {
   return z === "low" ? I.low : z === "high" ? I.high : I.inrange;
 }
@@ -160,6 +163,16 @@ export function renderGlucoseGif(series: number[], opts: RenderOpts = {}): Uint8
   }
   gif.finish();
   return gif.bytes();
+}
+
+/** Build the first indexed frame for a series (exposed for tests). */
+export function renderFrameIndexed(series: number[], opts: RenderOpts = {}, nowLit = true): Uint8Array {
+  return buildFrame(binToCols(series, W), opts, nowLit);
+}
+
+/** Read the palette index at (col, row) of an indexed frame. */
+export function pixelAt(frame: Uint8Array, col: number, row: number): number {
+  return frame[row * W + col];
 }
 
 /** Nearest-neighbour upscale one indexed frame by `s`x (for human preview only). */
