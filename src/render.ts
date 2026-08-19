@@ -194,17 +194,11 @@ function buildFrame(cols: number[], o: RenderOpts, nowLit: boolean): Uint8Array 
     if (stale && o.showValue === false) f[0 * W + 0] = I.gray;
   }
 
-  // Current value as a number, top-left, on a dark backing so it stays legible
-  // over any bar. Gray text also signals a stale reading.
+  // Current value as a number, top-left, drawn straight over the graph (no
+  // backing) so the curve stays visible behind it. Gray text signals stale.
   if (o.showValue !== false) {
     const v = o.currentMmol ?? cols[W - 1];
-    const txt = fmtValue(v);
-    const tw = textWidth(txt);
-    const x0 = 1, y0 = 1;
-    for (let r = 0; r <= y0 + GLYPH_H; r++)
-      for (let c = 0; c <= x0 + tw; c++)
-        if (r < H && c < W) f[r * W + c] = I.bg; // clear backing box
-    drawText(f, x0, y0, txt, stale ? I.gray : I.white);
+    drawText(f, 1, 1, fmtValue(v), stale ? I.gray : I.white);
   }
   return f;
 }
