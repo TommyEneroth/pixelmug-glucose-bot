@@ -15,16 +15,25 @@
 import { BotManager, InlineKeyBoard } from "../sdk/Bot_0.2.js";
 // @ts-ignore
 import PixelMug from "../sdk/DeviceSDK_PixelMug_0.1.ts";
+// @ts-ignore  — bundled SDK, no type declarations
+import { text2Tal, Specifications } from "../sdk/Text2Params.js";
 
 import { renderGlucoseGif, zone } from "./render";
 import { publishGif } from "./hosting";
-import { DexcomShare, slopePerMin, type Reading } from "./dexcom";
+import { DexcomShare, type Reading } from "./dexcom";
+import { assess, DEFAULT_THRESHOLDS, type AlertThresholds } from "./alerts";
 import { syntheticReadings } from "./synthetic";
 
 // ---------- config ----------
 const token = requireEnv("BOT_TOKEN");
 const intervalMs = Number(process.env.INTERVAL_MS ?? 5 * 60 * 1000);
 const useSynthetic = !process.env.DEXCOM_USERNAME; // fall back to fake data for demos
+
+const thresholds: AlertThresholds = {
+  lowUrgent: Number(process.env.LOW_URGENT ?? DEFAULT_THRESHOLDS.lowUrgent),
+  highUrgent: Number(process.env.HIGH_URGENT ?? DEFAULT_THRESHOLDS.highUrgent),
+  predWindowMin: Number(process.env.PRED_WINDOW_MIN ?? DEFAULT_THRESHOLDS.predWindowMin),
+};
 
 const dex = useSynthetic
   ? null
@@ -53,13 +62,28 @@ async function fetchReadings(): Promise<Reading[]> {
   return dex!.fetchSeries(6);
 }
 
-/** Fetch -> render -> publish -> push to the mug. Returns a short status line. */
+/** Send a scrolling coloured warning to the mug. */
+async function pushWarning(chat: any, text: string, color: string) {
+  const rpc = await text2Tal(text, Specifications.SMALL, color);
+  rpc.params.direction = 1; // scroll horizontally
+  rpc.params.speed = 60;
+  await bot.setDevMessage(chat, mug, rpc);
+}
+
+/** Fetch -> assess -> either warn (scrolling text) or show the graph. */
 async function pushGlucose(chat: any): Promise<string> {
   const readings = await fetchReadings();
   if (!readings.length) return "No glucose data.";
   const last = readings[readings.length - 1];
   const ageMin = (Date.now() - last.ts) / 60000;
-  const slope = slopePerMin(readings, 20);
+
+  const a = assess(readings, thresholds, Date.now());
+
+  // Active warning wins: show the scrolling red/amber alert instead of the graph.
+  if (a.warning && !discreet) {
+    await pushWarning(chat, a.warning.text, a.warning.color);
+    return `⚠ ${a.level}: "${a.warning.text}" — now ${a.current.toFixed(1)}, ~${a.predicted.toFixed(1)} in ${thresholds.predWindowMin}m. Warning sent.`;
+  }
 
   const bytes = renderGlucoseGif(
     readings.map((r) => r.mmol),
@@ -82,8 +106,8 @@ async function pushGlucose(chat: any): Promise<string> {
     method: "talPlayGif",
     params: { gifContent: { size: bytes.length, type: "image/gif", url } },
   });
-  const arrow = slope > 0.05 ? "↗" : slope < -0.05 ? "↘" : "→";
-  return `${last.mmol.toFixed(1)} mmol ${arrow} (${zone(last.mmol)}), age ${ageMin.toFixed(0)}m — pushed to mug.`;
+  const arrow = a.slope > 0.02 ? "↗" : a.slope < -0.02 ? "↘" : "→";
+  return `${last.mmol.toFixed(1)} mmol ${arrow} (${zone(last.mmol)}), ~${a.predicted.toFixed(1)} in ${thresholds.predWindowMin}m, age ${ageMin.toFixed(0)}m — graph pushed.`;
 }
 
 function startLoop(chat: any) {

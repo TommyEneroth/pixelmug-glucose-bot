@@ -95,6 +95,15 @@ describe("frame semantics", () => {
     expect(pixelAt(stale, 1, 1)).toBe(INDEX.gray);
   });
 
+  test("value number is coloured by zone: low=red, high=yellow", () => {
+    // low: '3' glyph top-left pixel (1,1) is lit
+    const low = renderFrameIndexed(flat(3.5), { showValue: true, currentMmol: 3.5, ageMin: 2 }, true);
+    expect(pixelAt(low, 1, 1)).toBe(INDEX.low);
+    // high: '1' glyph is lit at row 1 -> (1,2)
+    const high = renderFrameIndexed(flat(15), { showValue: true, currentMmol: 15, ageMin: 2 }, true);
+    expect(pixelAt(high, 1, 2)).toBe(INDEX.high);
+  });
+
   test("unknown value (0) prints '--' instead of a number", () => {
     const f = renderFrameIndexed([], { showValue: true, currentMmol: 0 }, true);
     // '-' glyph is a middle bar; row 3 (y=1+2) col 1 is lit for the first dash

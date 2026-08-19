@@ -195,10 +195,20 @@ function buildFrame(cols: number[], o: RenderOpts, nowLit: boolean): Uint8Array 
   }
 
   // Current value as a number, top-left, drawn straight over the graph (no
-  // backing) so the curve stays visible behind it. Gray text signals stale.
+  // backing) so the curve stays visible behind it. Colour signals the zone:
+  // red = low, yellow = high, white = in range; gray = stale.
   if (o.showValue !== false) {
     const v = o.currentMmol ?? cols[W - 1];
-    drawText(f, 1, 1, fmtValue(v), stale ? I.gray : I.white);
+    const numCol = stale
+      ? I.gray
+      : Number.isNaN(v) || v <= 0
+        ? I.white
+        : zone(v) === "low"
+          ? I.low
+          : zone(v) === "high"
+            ? I.high
+            : I.white;
+    drawText(f, 1, 1, fmtValue(v), numCol);
   }
   return f;
 }
