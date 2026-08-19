@@ -63,7 +63,15 @@ async function pushGlucose(chat: any): Promise<string> {
 
   const bytes = renderGlucoseGif(
     readings.map((r) => r.mmol),
-    { style, band: true, emphasizeLast: true, ageMin, blinkLow: zone(last.mmol) === "low" },
+    {
+      style,
+      band: true,
+      emphasizeLast: true,
+      ageMin,
+      blinkLow: zone(last.mmol) === "low",
+      showValue: !discreet, // discreet mode = colour band only, no number
+      currentMmol: last.mmol,
+    },
   );
   const { url, path } = publishGif(bytes);
 

@@ -125,9 +125,16 @@ function parseWt(wt: unknown): number {
 export function slopePerMin(readings: Reading[], windowMin = 20): number {
   if (readings.length < 2) return 0;
   const tEnd = readings[readings.length - 1].ts;
-  const pts = readings.filter((r) => tEnd - r.ts <= windowMin * 60 * 1000);
+  // de-duplicate by timestamp — Dexcom occasionally backfills near-identical WTs,
+  // which would otherwise collapse the regression denominator and blow up.
+  const seen = new Set<number>();
+  const pts = readings
+    .filter((r) => tEnd - r.ts <= windowMin * 60 * 1000)
+    .filter((r) => (seen.has(r.ts) ? false : (seen.add(r.ts), true)));
   if (pts.length < 2) return 0;
   const t0 = pts[0].ts;
+  const spanMin = (tEnd - t0) / 60000;
+  if (spanMin < 5) return 0; // too short a baseline to estimate a trend
   const xs = pts.map((p) => (p.ts - t0) / 60000);
   const ys = pts.map((p) => p.mmol);
   const n = xs.length;
@@ -136,5 +143,8 @@ export function slopePerMin(readings: Reading[], windowMin = 20): number {
   const sxx = xs.reduce((a, b) => a + b * b, 0);
   const sxy = xs.reduce((a, b, i) => a + b * ys[i], 0);
   const denom = n * sxx - sx * sx;
-  return denom === 0 ? 0 : (n * sxy - sx * sy) / denom;
+  if (denom <= 1e-6) return 0;
+  const slope = (n * sxy - sx * sy) / denom;
+  // clamp to a physiologically sane range (glucose rarely moves >0.5 mmol/min)
+  return Math.max(-1, Math.min(1, slope));
 }

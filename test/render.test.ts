@@ -77,15 +77,28 @@ describe("frame semantics", () => {
   });
 
   test("stale (>16 min) paints the newest column gray, never green", () => {
-    const f = renderFrameIndexed(flat(6.5), { emphasizeLast: true, ageMin: 30 }, true);
+    const f = renderFrameIndexed(flat(6.5), { emphasizeLast: true, ageMin: 30, showValue: false }, true);
     expect(pixelAt(f, W - 1, H - 1)).toBe(INDEX.gray);
-    expect(pixelAt(f, 0, 0)).toBe(INDEX.gray); // stale warning dot, top-left
+    expect(pixelAt(f, 0, 0)).toBe(INDEX.gray); // stale warning dot when no number shown
   });
 
-  test("fresh in-range is green, not gray", () => {
-    const f = renderFrameIndexed(flat(6.5), { emphasizeLast: true, ageMin: 2 }, true);
+  test("fresh in-range is green", () => {
+    const f = renderFrameIndexed(flat(6.5), { emphasizeLast: true, ageMin: 2, showValue: false }, true);
     expect(pixelAt(f, W - 1, H - 1)).toBe(INDEX.inrange);
-    expect(pixelAt(f, 0, 0)).not.toBe(INDEX.gray);
+  });
+
+  test("value number: fresh is white, stale is gray (top-left glyph pixel)", () => {
+    // '6' glyph top-left pixel sits at (1,1)
+    const fresh = renderFrameIndexed(flat(6.5), { showValue: true, currentMmol: 6.5, ageMin: 2 }, true);
+    expect(pixelAt(fresh, 1, 1)).toBe(INDEX.white);
+    const stale = renderFrameIndexed(flat(6.5), { showValue: true, currentMmol: 6.5, ageMin: 30 }, true);
+    expect(pixelAt(stale, 1, 1)).toBe(INDEX.gray);
+  });
+
+  test("unknown value (0) prints '--' instead of a number", () => {
+    const f = renderFrameIndexed([], { showValue: true, currentMmol: 0 }, true);
+    // '-' glyph is a middle bar; row 3 (y=1+2) col 1 is lit for the first dash
+    expect(pixelAt(f, 1, 3)).toBe(INDEX.white);
   });
 
   test("target band is shaded when enabled", () => {

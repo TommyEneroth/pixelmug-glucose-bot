@@ -55,7 +55,13 @@ async function main() {
   cases.push({ name: "dramatic", series: syntheticSeries("dramatic") });
 
   for (const c of cases) {
-    const opts = { style: "bars" as const, band: true, emphasizeLast: true, ageMin: c.ageMin };
+    const opts = {
+      style: "bars" as const,
+      band: true,
+      emphasizeLast: true,
+      ageMin: c.ageMin,
+      currentMmol: c.series[c.series.length - 1],
+    };
     const mug = renderGlucoseGif(c.series, opts);
     const info = fmt(mug); // throws if invalid
     const { path, url } = publishGif(mug, `glucose_${c.name}.gif`);

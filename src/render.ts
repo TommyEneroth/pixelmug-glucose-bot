@@ -48,6 +48,56 @@ const I = {
 /** Palette index names — exported so tests can assert individual pixels. */
 export const INDEX = I;
 
+/**
+ * Minimal 3x5 pixel font — the simplest digits that stay legible on the mug.
+ * Each glyph is rows top→bottom; '1' = lit. '.' is a 1-wide glyph, the rest 3-wide.
+ */
+const FONT: Record<string, string[]> = {
+  "0": ["111", "101", "101", "101", "111"],
+  "1": ["010", "110", "010", "010", "111"],
+  "2": ["111", "001", "111", "100", "111"],
+  "3": ["111", "001", "111", "001", "111"],
+  "4": ["101", "101", "111", "001", "001"],
+  "5": ["111", "100", "111", "001", "111"],
+  "6": ["111", "100", "111", "101", "111"],
+  "7": ["111", "001", "010", "010", "010"],
+  "8": ["111", "101", "111", "101", "111"],
+  "9": ["111", "101", "111", "001", "111"],
+  "-": ["000", "000", "111", "000", "000"],
+  ".": ["0", "0", "0", "0", "1"],
+};
+const GLYPH_H = 5;
+
+function textWidth(s: string): number {
+  let w = 0;
+  for (let i = 0; i < s.length; i++) {
+    w += (FONT[s[i]]?.[0].length ?? 3) + (i < s.length - 1 ? 1 : 0);
+  }
+  return w;
+}
+
+/** Draw a string into an indexed frame at (x,y) with palette index `idx`. */
+function drawText(frame: Uint8Array, x: number, y: number, s: string, idx: number) {
+  let cx = x;
+  for (const ch of s) {
+    const g = FONT[ch];
+    if (!g) { cx += 4; continue; }
+    for (let r = 0; r < GLYPH_H; r++)
+      for (let c = 0; c < g[r].length; c++)
+        if (g[r][c] === "1") {
+          const px = cx + c, py = y + r;
+          if (px >= 0 && px < W && py >= 0 && py < H) frame[py * W + px] = idx;
+        }
+    cx += g[0].length + 1;
+  }
+}
+
+/** Format an mmol value for the tiny display: one decimal, or "--" if unknown. */
+function fmtValue(mmol: number): string {
+  if (Number.isNaN(mmol) || mmol <= 0) return "--";
+  return mmol.toFixed(1);
+}
+
 function fullIdx(z: string) {
   return z === "low" ? I.low : z === "high" ? I.high : I.inrange;
 }
@@ -83,6 +133,10 @@ export type RenderOpts = {
   ageMin?: number;
   /** Force a low-alarm blink even if not computed from data. */
   blinkLow?: boolean;
+  /** Show the current value as a number, top-left (default true). */
+  showValue?: boolean;
+  /** The exact current value to print (defaults to the last binned column). */
+  currentMmol?: number;
 };
 
 function blankFrame(band: boolean): Uint8Array {
@@ -136,8 +190,21 @@ function buildFrame(cols: number[], o: RenderOpts, nowLit: boolean): Uint8Array 
     } else if (o.emphasizeLast ?? true) {
       for (let r = top; r < H; r++) f[r * W + cLast] = markIdx;
     }
-    // stale warning dot, top-left
-    if (stale) f[0 * W + 0] = I.gray;
+    // stale warning dot, top-left (only when the number isn't shown there)
+    if (stale && o.showValue === false) f[0 * W + 0] = I.gray;
+  }
+
+  // Current value as a number, top-left, on a dark backing so it stays legible
+  // over any bar. Gray text also signals a stale reading.
+  if (o.showValue !== false) {
+    const v = o.currentMmol ?? cols[W - 1];
+    const txt = fmtValue(v);
+    const tw = textWidth(txt);
+    const x0 = 1, y0 = 1;
+    for (let r = 0; r <= y0 + GLYPH_H; r++)
+      for (let c = 0; c <= x0 + tw; c++)
+        if (r < H && c < W) f[r * W + c] = I.bg; // clear backing box
+    drawText(f, x0, y0, txt, stale ? I.gray : I.white);
   }
   return f;
 }
