@@ -37,8 +37,10 @@ class MainActivity : AppCompatActivity() {
         dexPass.setText(prefs.dexPass)
         gifBase.setText(prefs.gifBase)
         when (prefs.pack) {
+            "mumin" -> pack.check(R.id.packMumin)
             "pacman" -> pack.check(R.id.packPacman)
             "emoji" -> pack.check(R.id.packEmoji)
+            "notman" -> pack.check(R.id.packNotman)
             else -> pack.check(R.id.packSnobben)
         }
 
@@ -48,7 +50,8 @@ class MainActivity : AppCompatActivity() {
             prefs.dexPass = dexPass.text.toString()
             prefs.gifBase = gifBase.text.toString().trim()
             prefs.pack = when (pack.checkedRadioButtonId) {
-                R.id.packPacman -> "pacman"; R.id.packEmoji -> "emoji"; else -> "snobben"
+                R.id.packMumin -> "mumin"; R.id.packPacman -> "pacman"
+                R.id.packEmoji -> "emoji"; R.id.packNotman -> "notman"; else -> "snobben"
             }
         }
 

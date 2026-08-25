@@ -23,10 +23,12 @@
         <EditText android:id="@+id/gifBase" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="GIF bas-URL" android:inputType="textUri" />
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Paket:" />
-        <RadioGroup android:id="@+id/pack" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <RadioButton android:id="@+id/packSnobben" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Snobben" android:checked="true" />
+        <RadioGroup android:id="@+id/pack" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <RadioButton android:id="@+id/packSnobben" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Snobben (Snoopy)" android:checked="true" />
+            <RadioButton android:id="@+id/packMumin" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mumin" />
             <RadioButton android:id="@+id/packPacman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Pac-Man" />
             <RadioButton android:id="@+id/packEmoji" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Emoji" />
+            <RadioButton android:id="@+id/packNotman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="NOT-man (Anthrax)" />
         </RadioGroup>
 
         <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Koppla mugg (öppna Bubble, skicka /start)" />
