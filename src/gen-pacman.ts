@@ -49,7 +49,8 @@ const GHOST = [
 const SWEAT = ["V", "V"];
 
 type Expr = "happy" | "worried" | "panic" | "queasy" | "sick" | "sleep";
-const eye = (f: Uint8Array, s: string[], dx = 0) => stamp(f, CX - 1, CY - 5, s, dx);
+// eye sits forward (toward the mouth) and near the top, like the arcade sprite
+const eye = (f: Uint8Array, s: string[], dx = 0) => stamp(f, CX + 1, CY - 5, s, dx);
 const pellets = (f: Uint8Array, xs: number[]) => xs.forEach((x) => stamp(f, x, CY - 1, PELLET));
 
 function frames(expr: Expr): Uint8Array[] {
@@ -79,8 +80,8 @@ function frames(expr: Expr): Uint8Array[] {
     return [mk(0), mk(1)];
   }
   // sleep — full disc (mouth shut), closed eye, snore bubble
-  const a = blank(); pac(a, false, 0); stamp(a, CX - 1, CY - 5, ["BB"]); stamp(a, 22, 3, ["V"]);
-  const b = blank(); pac(b, false, 3); stamp(b, CX - 1, CY - 5, ["BB"]); stamp(b, 23, 2, ["V"]);
+  const a = blank(); pac(a, false, 0); eye(a, ["BB"]); stamp(a, 22, 3, ["V"]);
+  const b = blank(); pac(b, false, 3); eye(b, ["BB"]); stamp(b, 23, 2, ["V"]);
   return [a, b, a];
 }
 
