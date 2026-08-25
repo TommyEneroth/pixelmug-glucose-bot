@@ -16,18 +16,18 @@ function ramp(lastMmol: number, slope: number, nowTs = NOW, n = 12, stepMin = 5)
 }
 
 describe("assess — acute warnings", () => {
-  test("below 3 -> urgent low, red, includes the mmol value + 'ÄT NU'", () => {
+  test("below 3 -> urgent low, red, value + arrow + 'ÄT NU'", () => {
     const a = assess(ramp(2.8, 0), DEFAULT_THRESHOLDS, NOW);
     expect(a.level).toBe("urgentLow");
     expect(a.warning?.color).toBe(RED);
-    expect(a.warning?.text).toBe("LÅGT 2.8 – ÄT NU");
+    expect(a.warning?.text).toBe("LÅGT 2.8 → – ÄT NU"); // flat slope -> →
   });
 
-  test("above 14 -> urgent high, red, includes the mmol value", () => {
+  test("above 14 -> urgent high, red, value + arrow", () => {
     const a = assess(ramp(15.2, 0), DEFAULT_THRESHOLDS, NOW);
     expect(a.level).toBe("urgentHigh");
     expect(a.warning?.color).toBe(RED);
-    expect(a.warning?.text).toBe("HÖGT 15.2!");
+    expect(a.warning?.text).toBe("HÖGT 15.2 →!");
   });
 });
 
@@ -39,15 +39,17 @@ describe("assess — 20-min prediction", () => {
     expect(a.warning?.color).toBe(RED);
     expect(a.current).toBeGreaterThan(3); // not yet low
     expect(a.predicted).toBeLessThanOrEqual(3);
-    expect(a.warning?.text).toContain("SNART");
+    // includes current value, falling arrow, and the prediction
+    expect(a.warning?.text).toBe("SNART LÅGT 6.0 ↘ ~2.0 om 20 min");
   });
 
-  test("rising fast so predicted >= 14 -> predHigh (amber)", () => {
+  test("rising fast so predicted >= 14 -> predHigh (amber), value + arrow", () => {
     // current 11, slope +0.2/min -> predicted 15
     const a = assess(ramp(11.0, 0.2), DEFAULT_THRESHOLDS, NOW);
     expect(a.level).toBe("predHigh");
     expect(a.warning?.color).toBe(AMBER);
     expect(a.predicted).toBeGreaterThanOrEqual(14);
+    expect(a.warning?.text).toBe("SNART HÖGT 11.0 ↗ ~15.0 om 20 min");
   });
 
   test("mild fall that stays in range -> ok, no warning", () => {

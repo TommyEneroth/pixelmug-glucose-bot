@@ -43,6 +43,13 @@ export type Assessment = {
   warning: { text: string; color: string } | null;
 };
 
+/** Trend arrow from the slope (mmol/min). */
+export function arrow(slope: number): string {
+  if (slope > 0.05) return "↗";
+  if (slope < -0.05) return "↘";
+  return "→";
+}
+
 export function assess(
   readings: Reading[],
   t: AlertThresholds = DEFAULT_THRESHOLDS,
@@ -75,19 +82,22 @@ export function assess(
   let level: Level = "ok";
   let warning: Assessment["warning"] = null;
   const win = t.predWindowMin;
+  const cur = current.toFixed(1);
+  const arr = arrow(slope);
+  const pred = predicted.toFixed(1);
 
   if (current <= t.lowUrgent) {
     level = "urgentLow";
-    warning = { text: `LÅGT ${current.toFixed(1)} – ÄT NU`, color: RED };
+    warning = { text: `LÅGT ${cur} ${arr} – ÄT NU`, color: RED };
   } else if (current >= t.highUrgent) {
     level = "urgentHigh";
-    warning = { text: `HÖGT ${current.toFixed(1)}!`, color: RED };
+    warning = { text: `HÖGT ${cur} ${arr}!`, color: RED };
   } else if (slope < 0 && predicted <= t.lowUrgent) {
     level = "predLow";
-    warning = { text: `SNART LÅGT – ~${predicted.toFixed(1)} om ${win} min`, color: RED };
+    warning = { text: `SNART LÅGT ${cur} ${arr} ~${pred} om ${win} min`, color: RED };
   } else if (slope > 0 && predicted >= t.highUrgent) {
     level = "predHigh";
-    warning = { text: `SNART HÖGT – ~${predicted.toFixed(1)} om ${win} min`, color: AMBER };
+    warning = { text: `SNART HÖGT ${cur} ${arr} ~${pred} om ${win} min`, color: AMBER };
   }
 
   return { current, ageMin, slope, predicted, level, warning };
