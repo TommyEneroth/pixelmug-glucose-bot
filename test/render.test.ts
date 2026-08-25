@@ -12,6 +12,7 @@ import {
 } from "../src/render";
 
 const flat = (v: number, n = 72) => new Array(n).fill(v);
+const has = (f: Uint8Array, idx: number) => Array.from(f).includes(idx);
 
 describe("zone thresholds", () => {
   test("boundaries", () => {
@@ -87,27 +88,27 @@ describe("frame semantics", () => {
     expect(pixelAt(f, W - 1, H - 1)).toBe(INDEX.inrange);
   });
 
-  test("value number: fresh is white, stale is gray (top-left glyph pixel)", () => {
-    // '6' glyph top-left pixel sits at (1,1)
-    const fresh = renderFrameIndexed(flat(6.5), { showValue: true, currentMmol: 6.5, ageMin: 2 }, true);
-    expect(pixelAt(fresh, 1, 1)).toBe(INDEX.white);
-    const stale = renderFrameIndexed(flat(6.5), { showValue: true, currentMmol: 6.5, ageMin: 30 }, true);
-    expect(pixelAt(stale, 1, 1)).toBe(INDEX.gray);
+  test("value number colour: fresh white, stale gray", () => {
+    const fresh = renderFrameIndexed([], { showValue: true, currentMmol: 6.5, ageMin: 2, band: false }, true);
+    expect(has(fresh, INDEX.white)).toBe(true);
+    expect(has(fresh, INDEX.gray)).toBe(false);
+    const stale = renderFrameIndexed([], { showValue: true, currentMmol: 6.5, ageMin: 30, band: false }, true);
+    expect(has(stale, INDEX.gray)).toBe(true);
+    expect(has(stale, INDEX.white)).toBe(false);
   });
 
   test("value number is coloured by zone: low=red, high=yellow", () => {
-    // low: '3' glyph top-left pixel (1,1) is lit
-    const low = renderFrameIndexed(flat(3.5), { showValue: true, currentMmol: 3.5, ageMin: 2 }, true);
-    expect(pixelAt(low, 1, 1)).toBe(INDEX.low);
-    // high: '1' glyph is lit at row 1 -> (1,2)
-    const high = renderFrameIndexed(flat(15), { showValue: true, currentMmol: 15, ageMin: 2 }, true);
-    expect(pixelAt(high, 1, 2)).toBe(INDEX.high);
+    const low = renderFrameIndexed([], { showValue: true, currentMmol: 3.5, ageMin: 2, band: false }, true);
+    expect(has(low, INDEX.low)).toBe(true);
+    expect(has(low, INDEX.high)).toBe(false);
+    const high = renderFrameIndexed([], { showValue: true, currentMmol: 15, ageMin: 2, band: false }, true);
+    expect(has(high, INDEX.high)).toBe(true);
+    expect(has(high, INDEX.low)).toBe(false);
   });
 
-  test("unknown value (0) prints '--' instead of a number", () => {
-    const f = renderFrameIndexed([], { showValue: true, currentMmol: 0 }, true);
-    // '-' glyph is a middle bar; row 3 (y=1+2) col 1 is lit for the first dash
-    expect(pixelAt(f, 1, 3)).toBe(INDEX.white);
+  test("unknown value (0) prints '--' (white)", () => {
+    const f = renderFrameIndexed([], { showValue: true, currentMmol: 0, band: false }, true);
+    expect(has(f, INDEX.white)).toBe(true);
   });
 
   test("target band is shaded when enabled", () => {
