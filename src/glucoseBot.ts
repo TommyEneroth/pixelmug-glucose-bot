@@ -15,13 +15,11 @@
 import { BotManager, InlineKeyBoard } from "../sdk/Bot_0.2.js";
 // @ts-ignore
 import PixelMug from "../sdk/DeviceSDK_PixelMug_0.1.ts";
-// @ts-ignore  — bundled SDK, no type declarations
-import { text2Tal, Specifications } from "../sdk/Text2Params.js";
 
 import { renderGlucoseGif, zone } from "./render";
 import { publishGif } from "./hosting";
 import { DexcomShare, type Reading } from "./dexcom";
-import { assess, DEFAULT_THRESHOLDS, type AlertThresholds } from "./alerts";
+import { assess, AMBER, DEFAULT_THRESHOLDS, type AlertThresholds } from "./alerts";
 import { syntheticReadings } from "./synthetic";
 
 // ---------- config ----------
@@ -62,52 +60,57 @@ async function fetchReadings(): Promise<Reading[]> {
   return dex!.fetchSeries(6);
 }
 
-/** Send a scrolling coloured warning to the mug. */
-async function pushWarning(chat: any, text: string, color: string) {
-  const rpc = await text2Tal(text, Specifications.SMALL, color);
-  rpc.params.direction = 1; // scroll horizontally
-  rpc.params.speed = 60;
-  await bot.setDevMessage(chat, mug, rpc);
+/** Push a GIF to the mug via talPlayGif. Returns the hosted url, or null if unhosted. */
+async function pushGif(chat: any, bytes: Uint8Array): Promise<string | null> {
+  const { url } = publishGif(bytes);
+  if (!url) return null;
+  await bot.setDevMessage(chat, mug, {
+    method: "talPlayGif",
+    params: { gifContent: { size: bytes.length, type: "image/gif", url } },
+  });
+  return url;
 }
 
-/** Fetch -> assess -> either warn (scrolling text) or show the graph. */
+/** Fetch -> assess -> push either a warning (text scrolling over the graph) or the graph. */
 async function pushGlucose(chat: any): Promise<string> {
   const readings = await fetchReadings();
   if (!readings.length) return "No glucose data.";
   const last = readings[readings.length - 1];
   const ageMin = (Date.now() - last.ts) / 60000;
-
   const a = assess(readings, thresholds, Date.now());
+  const mmols = readings.map((r) => r.mmol);
 
-  // Active warning wins: show the scrolling red/amber alert instead of the graph.
-  if (a.warning && !discreet) {
-    await pushWarning(chat, a.warning.text, a.warning.color);
-    return `⚠ ${a.level}: "${a.warning.text}" — now ${a.current.toFixed(1)}, ~${a.predicted.toFixed(1)} in ${thresholds.predWindowMin}m. Warning sent.`;
-  }
+  // Active warning: scroll the coloured warning text OVER the graph (graph stays
+  // visible behind the transparent text) instead of the plain number.
+  const bytes =
+    a.warning && !discreet
+      ? renderGlucoseGif(mmols, {
+          style,
+          band: true,
+          ageMin,
+          currentMmol: last.mmol,
+          overlayText: a.warning.text,
+          overlayColor: a.warning.color === AMBER ? "amber" : "red",
+        })
+      : renderGlucoseGif(mmols, {
+          style,
+          band: true,
+          emphasizeLast: true,
+          ageMin,
+          blinkLow: zone(last.mmol) === "low",
+          showValue: !discreet, // discreet mode = colour band only, no number
+          currentMmol: last.mmol,
+        });
 
-  const bytes = renderGlucoseGif(
-    readings.map((r) => r.mmol),
-    {
-      style,
-      band: true,
-      emphasizeLast: true,
-      ageMin,
-      blinkLow: zone(last.mmol) === "low",
-      showValue: !discreet, // discreet mode = colour band only, no number
-      currentMmol: last.mmol,
-    },
-  );
-  const { url, path } = publishGif(bytes);
-
+  const url = await pushGif(chat, bytes);
   if (!url) {
-    return `Rendered ${bytes.length}B GIF -> ${path}, but GIF_PUBLIC_BASE_URL is unset so the mug can't fetch it. Set it and retry.`;
+    return `Rendered ${bytes.length}B GIF but GIF_PUBLIC_BASE_URL is unset, so the mug can't fetch it. Set it and retry.`;
   }
-  await bot.setDevMessage(chat, mug, {
-    method: "talPlayGif",
-    params: { gifContent: { size: bytes.length, type: "image/gif", url } },
-  });
-  const arrow = a.slope > 0.02 ? "↗" : a.slope < -0.02 ? "↘" : "→";
-  return `${last.mmol.toFixed(1)} mmol ${arrow} (${zone(last.mmol)}), ~${a.predicted.toFixed(1)} in ${thresholds.predWindowMin}m, age ${ageMin.toFixed(0)}m — graph pushed.`;
+  if (a.warning) {
+    return `⚠ ${a.level}: "${a.warning.text}" — ${bytes.length}B warning GIF sent.`;
+  }
+  const arr = a.slope > 0.05 ? "↗" : a.slope < -0.05 ? "↘" : "→";
+  return `${last.mmol.toFixed(1)} ${arr} (${zone(last.mmol)}), ~${a.predicted.toFixed(1)} in ${thresholds.predWindowMin}m, age ${ageMin.toFixed(0)}m — graph pushed.`;
 }
 
 function startLoop(chat: any) {

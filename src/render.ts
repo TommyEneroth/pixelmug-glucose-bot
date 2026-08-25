@@ -39,10 +39,11 @@ const PALETTE: [number, number, number][] = [
   [255, 255, 255], //  8 white (now marker)
   [120, 120, 120], //  9 gray (stale)
   [70, 70, 70], // 10 gray dim
+  [255, 149, 0], // 11 amber (predicted-high warning text)
 ];
 const I = {
   bg: 0, band: 1, low: 2, lowDim: 3, inrange: 4, inrangeDim: 5,
-  high: 6, highDim: 7, white: 8, gray: 9, grayDim: 10,
+  high: 6, highDim: 7, white: 8, gray: 9, grayDim: 10, amber: 11,
 };
 
 /** Palette index names — exported so tests can assert individual pixels. */
@@ -63,10 +64,51 @@ const FONT: Record<string, string[]> = {
   "7": ["111", "001", "010", "010", "010"],
   "8": ["111", "101", "111", "101", "111"],
   "9": ["111", "101", "111", "001", "111"],
+  // uppercase letters (Å/Ä->A, Ö->O are normalised before drawing)
+  A: ["010", "101", "111", "101", "101"],
+  B: ["110", "101", "110", "101", "110"],
+  C: ["011", "100", "100", "100", "011"],
+  D: ["110", "101", "101", "101", "110"],
+  E: ["111", "100", "110", "100", "111"],
+  F: ["111", "100", "110", "100", "100"],
+  G: ["011", "100", "101", "101", "011"],
+  H: ["101", "101", "111", "101", "101"],
+  I: ["111", "010", "010", "010", "111"],
+  J: ["001", "001", "001", "101", "010"],
+  K: ["101", "101", "110", "101", "101"],
+  L: ["100", "100", "100", "100", "111"],
+  M: ["101", "111", "111", "101", "101"],
+  N: ["101", "111", "111", "111", "101"],
+  O: ["010", "101", "101", "101", "010"],
+  P: ["110", "101", "110", "100", "100"],
+  Q: ["010", "101", "101", "111", "011"],
+  R: ["110", "101", "110", "101", "101"],
+  S: ["011", "100", "010", "001", "110"],
+  T: ["111", "010", "010", "010", "010"],
+  U: ["101", "101", "101", "101", "111"],
+  V: ["101", "101", "101", "101", "010"],
+  W: ["101", "101", "111", "111", "101"],
+  X: ["101", "101", "010", "101", "101"],
+  Y: ["101", "101", "010", "010", "010"],
+  Z: ["111", "001", "010", "100", "111"],
+  // punctuation
   "-": ["000", "000", "111", "000", "000"],
   ".": ["0", "0", "0", "0", "1"],
+  "!": ["1", "1", "1", "0", "1"],
+  ":": ["0", "1", "0", "1", "0"],
+  "~": ["000", "010", "101", "000", "000"],
+  " ": ["00", "00", "00", "00", "00"],
+  // trend arrows: rising = "/", falling = "\", steady = "-"
+  "↗": ["001", "001", "010", "100", "100"],
+  "↘": ["100", "100", "010", "001", "001"],
+  "→": ["000", "000", "111", "000", "000"],
 };
 const GLYPH_H = 5;
+
+/** Uppercase and fold Swedish diacritics so the digit-era font can render them. */
+function normalizeOverlay(s: string): string {
+  return s.toUpperCase().replace(/[ÅÄ]/g, "A").replace(/Ö/g, "O").replace(/–/g, "-");
+}
 
 function textWidth(s: string): number {
   let w = 0;
@@ -137,6 +179,10 @@ export type RenderOpts = {
   showValue?: boolean;
   /** The exact current value to print (defaults to the last binned column). */
   currentMmol?: number;
+  /** If set, scroll this text over the graph (transparent) instead of the number. */
+  overlayText?: string;
+  /** Colour of the overlay text. */
+  overlayColor?: "red" | "amber" | "white";
 };
 
 function blankFrame(band: boolean): Uint8Array {
@@ -213,12 +259,45 @@ function buildFrame(cols: number[], o: RenderOpts, nowLit: boolean): Uint8Array 
   return f;
 }
 
+function overlayColorIdx(c?: string): number {
+  return c === "amber" ? I.amber : c === "white" ? I.white : I.low;
+}
+
+const SCROLL_STEP = 2; // px per frame — keeps the animation small enough for the 40KB cap
+
+/** Frames that scroll `overlayText` across a static graph (graph shows behind). */
+function scrollFrames(cols: number[], opts: RenderOpts): Uint8Array[] {
+  const text = normalizeOverlay(opts.overlayText!);
+  const col = overlayColorIdx(opts.overlayColor);
+  const tw = textWidth(text);
+  const y = 6; // graph stays visible above, below, and through the gaps in the text
+  const graphOpts = { ...opts, showValue: false }; // the scrolling text carries the value
+  const frames: Uint8Array[] = [];
+  for (let x = W; x >= -tw; x -= SCROLL_STEP) {
+    const f = buildFrame(cols, graphOpts, true);
+    drawText(f, x, y, text, col);
+    frames.push(f);
+  }
+  return frames;
+}
+
 /**
  * Render the glucose series to GIF bytes. Returns a valid 32x16 GIF89a.
- * If the newest reading is low (or blinkLow), emits a 2-frame looping blink.
+ * With `overlayText`, scrolls that text over the graph. Otherwise a static graph
+ * (or a 2-frame blink when the newest reading is low).
  */
 export function renderGlucoseGif(series: number[], opts: RenderOpts = {}): Uint8Array {
   const cols = binToCols(series, W);
+
+  if (opts.overlayText) {
+    const gif = GIFEncoder();
+    const frames = scrollFrames(cols, opts);
+    frames.forEach((fr, i) =>
+      gif.writeFrame(fr, W, H, { palette: PALETTE, delay: 80, repeat: 0, first: i === 0 }));
+    gif.finish();
+    return gif.bytes();
+  }
+
   const newest = cols[W - 1];
   const isLow = opts.blinkLow || (!Number.isNaN(newest) && zone(newest) === "low");
 
@@ -265,10 +344,20 @@ function upscale(frame: Uint8Array, s: number): Uint8Array {
  */
 export function renderPreviewGif(series: number[], scale = 16, opts: RenderOpts = {}): Uint8Array {
   const cols = binToCols(series, W);
+  const bigW = W * scale, bigH = H * scale;
+
+  if (opts.overlayText) {
+    const gif = GIFEncoder();
+    const frames = scrollFrames(cols, opts);
+    frames.forEach((fr, i) =>
+      gif.writeFrame(upscale(fr, scale), bigW, bigH, { palette: PALETTE, delay: 80, repeat: 0, first: i === 0 }));
+    gif.finish();
+    return gif.bytes();
+  }
+
   const newest = cols[W - 1];
   const isLow = opts.blinkLow || (!Number.isNaN(newest) && zone(newest) === "low");
   const gif = GIFEncoder();
-  const bigW = W * scale, bigH = H * scale;
   if (isLow) {
     gif.writeFrame(upscale(buildFrame(cols, opts, true), scale), bigW, bigH, { palette: PALETTE, delay: 600, repeat: 0, first: true });
     gif.writeFrame(upscale(buildFrame(cols, opts, false), scale), bigW, bigH, { palette: PALETTE, delay: 600 });
