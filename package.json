@@ -10,6 +10,8 @@
     "bot": "bun run src/glucoseBot.ts",
     "export-faces": "bun run src/export-faces.ts",
     "gen-snobben": "bun run src/gen-snobben.ts",
+    "gen-emoji": "bun run src/gen-emoji.ts",
+    "gen-pacman": "bun run src/gen-pacman.ts",
     "test": "bun test"
   },
   "dependencies": {
