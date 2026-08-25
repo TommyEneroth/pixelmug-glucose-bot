@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         val dexPass = findViewById<EditText>(R.id.dexPass)
         val gifBase = findViewById<EditText>(R.id.gifBase)
         val pack = findViewById<RadioGroup>(R.id.pack)
+        val preview = findViewById<ImageView>(R.id.preview)
         val status = findViewById<TextView>(R.id.status)
 
         token.setText(prefs.token)
@@ -43,6 +44,18 @@ class MainActivity : AppCompatActivity() {
             "notman" -> pack.check(R.id.packNotman)
             else -> pack.check(R.id.packSnobben)
         }
+
+        fun updatePreview() {
+            preview.setImageResource(when (pack.checkedRadioButtonId) {
+                R.id.packMumin -> R.drawable.preview_mumin
+                R.id.packPacman -> R.drawable.preview_pacman
+                R.id.packEmoji -> R.drawable.preview_emoji
+                R.id.packNotman -> R.drawable.preview_notman
+                else -> R.drawable.preview_snobben
+            })
+        }
+        updatePreview()
+        pack.setOnCheckedChangeListener { _, _ -> updatePreview() }
 
         fun save() {
             prefs.token = token.text.toString().trim()

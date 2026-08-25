@@ -31,6 +31,16 @@
             <RadioButton android:id="@+id/packNotman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="NOT-man (Anthrax)" />
         </RadioGroup>
 
+        <ImageView
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:adjustViewBounds="true"
+            android:background="#F0EEE8"
+            android:contentDescription="Förhandsvisning av paketet"
+            android:scaleType="fitCenter" />
+
         <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Koppla mugg (öppna Bubble, skicka /start)" />
         <Button android:id="@+id/btnTest" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Testa push (happy)" />
         <Button android:id="@+id/btnStart" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Starta (var 5:e min)" />
