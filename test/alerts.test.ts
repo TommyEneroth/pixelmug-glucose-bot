@@ -16,18 +16,18 @@ function ramp(lastMmol: number, slope: number, nowTs = NOW, n = 12, stepMin = 5)
 }
 
 describe("assess — acute warnings", () => {
-  test("below 3 -> urgent low, red, 'ÄT NU'", () => {
+  test("below 3 -> urgent low, red, includes the mmol value + 'ÄT NU'", () => {
     const a = assess(ramp(2.8, 0), DEFAULT_THRESHOLDS, NOW);
     expect(a.level).toBe("urgentLow");
     expect(a.warning?.color).toBe(RED);
-    expect(a.warning?.text).toContain("ÄT NU");
+    expect(a.warning?.text).toBe("LÅGT 2.8 – ÄT NU");
   });
 
-  test("above 14 -> urgent high, red, 'ÖVER 14'", () => {
+  test("above 14 -> urgent high, red, includes the mmol value", () => {
     const a = assess(ramp(15.2, 0), DEFAULT_THRESHOLDS, NOW);
     expect(a.level).toBe("urgentHigh");
     expect(a.warning?.color).toBe(RED);
-    expect(a.warning?.text).toContain("ÖVER 14");
+    expect(a.warning?.text).toBe("HÖGT 15.2!");
   });
 });
 

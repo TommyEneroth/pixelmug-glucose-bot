@@ -43,11 +43,6 @@ export type Assessment = {
   warning: { text: string; color: string } | null;
 };
 
-/** Trim a threshold for display: 3 not "3.0", but 3.5 stays "3.5". */
-function n(x: number): string {
-  return Number.isInteger(x) ? String(x) : x.toFixed(1);
-}
-
 export function assess(
   readings: Reading[],
   t: AlertThresholds = DEFAULT_THRESHOLDS,
@@ -83,10 +78,10 @@ export function assess(
 
   if (current <= t.lowUrgent) {
     level = "urgentLow";
-    warning = { text: `UNDER ${n(t.lowUrgent)} – ÄT NU!`, color: RED };
+    warning = { text: `LÅGT ${current.toFixed(1)} – ÄT NU`, color: RED };
   } else if (current >= t.highUrgent) {
     level = "urgentHigh";
-    warning = { text: `ÖVER ${n(t.highUrgent)}!`, color: RED };
+    warning = { text: `HÖGT ${current.toFixed(1)}!`, color: RED };
   } else if (slope < 0 && predicted <= t.lowUrgent) {
     level = "predLow";
     warning = { text: `SNART LÅGT – ~${predicted.toFixed(1)} om ${win} min`, color: RED };
