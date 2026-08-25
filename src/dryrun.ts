@@ -7,7 +7,8 @@
  * that matches your live level. Each mug GIF is validated against the talPlayGif
  * constraints (32x16, GIF89a, <=40KB).
  */
-import { renderFaceGif, renderFacePreviewGif, expressionForLevel, EXPRESSIONS } from "./face";
+import { renderFacePreviewGif, expressionForLevel, EXPRESSIONS } from "./face";
+import { faceGif, faceSource } from "./facepack";
 import { assertMugGif } from "./render";
 import { publishGif } from "./hosting";
 import { DexcomShare } from "./dexcom";
@@ -43,13 +44,17 @@ async function main() {
     console.log(`No Dexcom creds — synthetic level ${a.level} -> face:${expressionForLevel(a.level)}\n`);
   }
 
+  const pack = process.env.FACE_PACK;
+  console.log(pack ? `Using face pack: ${pack} (missing files fall back to built-in)\n` : "Using built-in NOT-man faces\n");
+
   for (const e of EXPRESSIONS) {
-    const mug = renderFaceGif(e);
+    const mug = faceGif(e); // pack GIF if present & valid, else built-in
     const info = assertMugGif(mug); // throws if invalid
+    const src = faceSource(e);
     const { path } = publishGif(mug, `face_${e}.gif`);
-    writeFileSync(join(OUT, `preview_face_${e}.gif`), renderFacePreviewGif(e, 12));
+    if (src === "built-in") writeFileSync(join(OUT, `preview_face_${e}.gif`), renderFacePreviewGif(e, 12));
     const mark = live && live.expr === e ? "  <- your level now" : "";
-    console.log(`■ ${e.padEnd(8)} ${info.header} ${info.w}x${info.h} ${String(info.size).padStart(4)}B${mark}`);
+    console.log(`■ ${e.padEnd(8)} ${src.padEnd(8)} ${info.header} ${info.w}x${info.h} ${String(info.size).padStart(5)}B${mark}`);
     console.log(`  mug : ${path}`);
   }
 

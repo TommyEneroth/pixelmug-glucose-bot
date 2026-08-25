@@ -8,6 +8,7 @@
     "dryrun": "bun run src/dryrun.ts",
     "serve": "bun run src/serve.ts",
     "bot": "bun run src/glucoseBot.ts",
+    "export-faces": "bun run src/export-faces.ts",
     "test": "bun test"
   },
   "dependencies": {

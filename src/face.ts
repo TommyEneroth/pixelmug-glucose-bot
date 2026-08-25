@@ -114,7 +114,7 @@ const SLEEP_MOUTH_A = [".KKKK.", "K....K"];
 const SLEEP_MOUTH_B = [".KKKK.", ".K..K."];
 const SWEAT = ["V", "V"];
 
-type Expr = "happy" | "worried" | "panic" | "queasy" | "sick" | "sleep";
+export type Expr = "happy" | "worried" | "panic" | "queasy" | "sick" | "sleep";
 
 export function expressionForLevel(level: Level): Expr {
   switch (level) {

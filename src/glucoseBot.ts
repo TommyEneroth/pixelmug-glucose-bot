@@ -18,7 +18,8 @@ import PixelMug from "../sdk/DeviceSDK_PixelMug_0.1.ts";
 import { publishGif } from "./hosting";
 import { DexcomShare, type Reading } from "./dexcom";
 import { assess, DEFAULT_THRESHOLDS, type AlertThresholds } from "./alerts";
-import { renderFaceGif, expressionForLevel } from "./face";
+import { expressionForLevel } from "./face";
+import { faceGif, faceSource } from "./facepack";
 import { syntheticReadings } from "./synthetic";
 
 // ---------- config ----------
@@ -76,12 +77,12 @@ async function pushGlucose(chat: any): Promise<string> {
   const a = assess(readings, thresholds, Date.now());
   const expr = expressionForLevel(a.level);
 
-  const bytes = renderFaceGif(expr);
+  const bytes = faceGif(expr); // pack GIF if configured, else built-in NOT-man
   const url = await pushGif(chat, bytes);
   if (!url) {
     return `Rendered ${bytes.length}B face (${expr}) but GIF_PUBLIC_BASE_URL is unset, so the mug can't fetch it.`;
   }
-  return `${last.mmol.toFixed(1)} mmol (${a.level}), age ${ageMin.toFixed(0)}m — face:${expr} sent.`;
+  return `${last.mmol.toFixed(1)} mmol (${a.level}), age ${ageMin.toFixed(0)}m — face:${expr} (${faceSource(expr)}) sent.`;
 }
 
 function startLoop(chat: any) {
@@ -153,7 +154,10 @@ bot.on(async (ctx: any) => {
 });
 
 bot.start();
-console.log(`glucose-bot running. interval=${intervalMs}ms, source=${useSynthetic ? "synthetic" : "dexcom"}.`);
+console.log(
+  `glucose-face bot running. interval=${intervalMs}ms, data=${useSynthetic ? "synthetic" : "dexcom"}, ` +
+    `faces=${process.env.FACE_PACK ? `pack:${process.env.FACE_PACK}` : "built-in"}.`,
+);
 
 function requireEnv(name: string): string {
   const v = process.env[name];

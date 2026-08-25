@@ -45,7 +45,7 @@ eye/brow/moustache/mouth sprites. Every mug GIF is under ~1 KB — far below the
 bun install          # deps (gifenc)
 bun run setup        # fetch the third-party Bubble SDK into ./sdk (not committed)
 bun run dryrun       # render every face to ./out (+ your live face if creds set) — NO mug/token needed
-bun test             # 39 tests incl. face validity + level→expression mapping
+bun test             # 42 tests incl. face validity, level→expression, face-pack loading
 ```
 
 `dryrun` uses synthetic data by default; drop real Dexcom creds into `.env` to see the face for
@@ -69,11 +69,50 @@ bun run bot
 
 Then open the bot's chat in the Bubble app, attach your PixelMug, and send `/start`.
 
+## Making a face pack (swap the GIFs)
+
+The faces are **swappable**. A *face pack* is just a folder with six GIFs — one per mood:
+
+```
+my-theme/
+  happy.gif   worried.gif   panic.gif
+  queasy.gif  sick.gif      sleep.gif
+```
+
+Each GIF must be **exactly 32×16, GIF87a/89a, ≤ 40 KB** (the mug's `talPlayGif` rules).
+Animation is welcome — that's what the mug plays.
+
+**1. Start from the built-in faces** (so you get correctly-sized files to edit):
+
+```bash
+bun run export-faces my-theme     # writes the 6 current faces into ./my-theme
+```
+
+**2. Edit or replace** each `my-theme/<mood>.gif` in any pixel / GIF editor — keep it 32×16.
+
+**3. Use the pack** — point `FACE_PACK` at the folder (flag or in `.env`):
+
+```bash
+FACE_PACK=my-theme bun run dryrun   # validates every file, prints "pack" vs "built-in"
+FACE_PACK=my-theme bun run bot      # run the mug with your pack
+```
+
+Good to know:
+- **Any missing file falls back** to the built-in NOT-man face, so a partial pack is fine.
+- `dryrun` checks each pack GIF and fails loudly if one breaks the 32×16 / ≤40 KB rules.
+- Keep several folders (`zombie/`, `cat/`, `minimal/`, …) and switch by changing `FACE_PACK`.
+- The pack only changes the **pictures**. Which mood maps to which glucose level lives in
+  `expressionForLevel()` (`src/face.ts`) and the table above — that logic is unchanged.
+- **Prefer to draw in code?** Edit the sprites in `src/face.ts` (head, eyes, brows, moustache,
+  mouths) and re-run — no files needed.
+
 ## Project layout
 
 | File | Purpose |
 |---|---|
-| `src/face.ts` | the animated 32×16 face — head, expression sprites, `renderFaceGif` |
+| `src/face.ts` | the animated 32×16 built-in face — head, expression sprites, `renderFaceGif` |
+| `src/facepack.ts` | picks the GIF per mood: a `FACE_PACK` folder if set, else built-in |
+| `src/export-faces.ts` | `bun run export-faces <dir>` — dump the built-in faces as editable GIFs |
 | `src/alerts.ts` | level + 20-min prediction (`assess`) that picks the expression |
 | `src/dexcom.ts` | Dexcom Share client (EU/US), session cache, least-squares trend |
 | `src/hosting.ts` | write GIF to `./out` and build the public URL the mug downloads |

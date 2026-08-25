@@ -12,6 +12,9 @@ sdk/*.ts
 # rendered output
 out/
 
+# default face-pack scratch export (name your real packs something else to keep them)
+faces/
+
 # misc
 .DS_Store
 *.log
