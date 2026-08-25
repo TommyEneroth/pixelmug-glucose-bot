@@ -15,6 +15,14 @@ out/
 # default face-pack scratch export (name your real packs something else to keep them)
 faces/
 
+# android build artifacts + local config
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/.kotlin/
+
 # misc
 .DS_Store
 *.log

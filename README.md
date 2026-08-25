@@ -152,6 +152,27 @@ python3 scripts/mug_mockup.py packs/snobben/happy.gif docs/mug.gif
   <img src="docs/mug_pacman_happy.gif" width="360" alt="Pac-Man on the mug">
 </p>
 
+## Run on the phone (Android app)
+
+`android/` is a native Kotlin app that runs the whole loop **on your phone** — no PC, no tunnel.
+Every 5 min it fetches Dexcom, picks the expression, and pushes the matching pack GIF to the mug
+via the Bubble bot API (a foreground service).
+
+```bash
+cd android
+./gradlew :app:assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+In the app: enter your **bot token** + **Dexcom** login, set the **GIF base URL**, pick a pack,
+tap **Koppla mugg** (open the Bubble app and send `/start` to the bot so it can capture the chat),
+then **Starta**. `Testa push` sends the happy face immediately.
+
+> The mug fetches each face from a **public URL** (`GIF base URL` → `<base>/packs/<pack>/<expr>.gif`).
+> The six GIFs per pack are static, so host them once anywhere public — e.g. make this repo public
+> and use the jsDelivr default (`https://cdn.jsdelivr.net/gh/<user>/pixelmug-glucose-bot@face-emoji`),
+> or point the base URL at any static host / bucket.
+
 ## Project layout
 
 | File | Purpose |
