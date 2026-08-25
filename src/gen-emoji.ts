@@ -7,10 +7,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const W = 32, H = 16;
-// 0 bg,1 yellow,2 yellow-shade,3 black,4 red,5 white,6 blue,7 green,8 green-shade,9 pink
+// 0 bg=LIGHT ceramic,1 yellow,2 yellow-shade,3 black,4 red,5 white,6 blue,7 green,8 green-shade,9 pink
 const PALETTE: [number, number, number][] = [
-  [10, 10, 14], [255, 205, 50], [226, 170, 28], [26, 22, 12], [210, 50, 50],
-  [250, 250, 250], [110, 178, 250], [150, 205, 120], [110, 166, 86], [240, 150, 150],
+  [232, 229, 222], [255, 205, 50], [226, 170, 28], [26, 22, 12], [210, 50, 50],
+  [250, 250, 250], [70, 150, 240], [150, 205, 120], [110, 166, 86], [236, 120, 120],
 ];
 const CH: Record<string, number> = { B: 3, W: 5, P: 3, R: 4, V: 6, C: 9 };
 const blank = () => new Uint8Array(W * H).fill(0);
@@ -29,6 +29,15 @@ function head(green = false, dx = 0): Uint8Array {
       if (sx < 0 || sx >= W || !inside(sx, y)) continue;
       f[y * W + x] = y >= 12 ? shade : base;
     }
+  // 1px black outline so the face reads on the light ceramic background
+  const out: number[] = [];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      if (f[y * W + x] !== 0) continue;
+      const b = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && (f[yy * W + xx] === base || f[yy * W + xx] === shade);
+      if (b(x - 1, y) || b(x + 1, y) || b(x, y - 1) || b(x, y + 1)) out.push(y * W + x);
+    }
+  for (const i of out) f[i] = 3;
   return f;
 }
 function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {

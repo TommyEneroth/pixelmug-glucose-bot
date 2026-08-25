@@ -38,7 +38,7 @@ function head(green = false, dx = 0): Uint8Array {
   const f = blank();
   const base = green ? 5 : 1, sh = green ? 6 : 3;
   ellipse(f, 12, 7, 9, 6, base, dx); // skull
-  ellipse(f, 24, 10, 8, 4, base, dx); // snout (extended right so the nose gets a white ring)
+  ellipse(f, 24, 10, 8.5, 4, base, dx); // snout (extended right so the nose gets a white ring)
   for (let y = 12; y < H; y++)
     for (let x = 0; x < W; x++) if (f[y * W + x] === base) f[y * W + x] = sh;
   // 1px black outline around the body silhouette
@@ -62,22 +62,22 @@ function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
   }
 }
 
-// long floppy BLACK ear at the back (left) — Snoopy's signature. Black reads well
-// on the light ceramic background. Bigger = clearer.
+// long floppy BLACK ear at the back — Snoopy's signature: wide rounded top,
+// narrowing to a rounded tip, hanging well below the head.
 const EAR = [
-  "BBBB...", "BBBBB..", "BBBBBB.", "BBBBBB.", "BBBBBB.",
-  "BBBBBB.", ".BBBBBB", ".BBBBB.", ".BBBBB.", "..BBBB.", "..BBB..", "...BB..",
+  ".BBBBB.", "BBBBBBB", "BBBBBBB", "BBBBBBB", ".BBBBBB",
+  ".BBBBBB", ".BBBBB.", "..BBBB.", "..BBBB.", "..BBB..", "..BBB..", "...BB..",
 ];
 const EAR_UP = [
-  "....BBB", "..BBBBBB", ".BBBBBB.", "BBBBBBB.", "BBBBBB..",
-  "BBBBB...", "BBBB....", ".BBBB...", ".BBB....",
+  "...BBBBB", "..BBBBBBB", "BBBBBBBB.", "BBBBBBB..", "BBBBBB...",
+  ".BBBBB...", ".BBBB....", "..BBB....", "..BBB....",
 ];
 
-const EYE = ["B", "B"];
-const EYE_HAPPY = ["BB"];      // content squint
-const EYE_WIDE = ["BB", "BB"]; // shocked
+const EYE = ["BB", "BB"];       // small oval
+const EYE_HAPPY = [".BB.", "B..B"]; // happy upward curve ‿
+const EYE_WIDE = ["BBB", "BBB", "BBB"]; // shocked
 const EYE_X = ["B.B", ".B.", "B.B"];
-const EYE_SLEEP = ["BB"];
+const EYE_SLEEP = ["BBBB"];
 const MOUTH = ["B...", ".BBB"];       // little smile under the snout
 const MOUTH_FLAT = ["BBBB"];
 const MOUTH_OPEN = [".BB.", "BRRB", ".BB."];
@@ -85,9 +85,9 @@ const MOUTH_TONGUE = ["BBB", "BRB", ".R."];
 const SWEAT = ["V", "V"];
 
 type Expr = "happy" | "worried" | "panic" | "queasy" | "sick" | "sleep";
-const nose = (f: Uint8Array, dx = 0) => ellipse(f, 26, 10, 3.6, 2.8, 2, dx); // bigger snout nose
-const ear = (f: Uint8Array, up = false, dx = 0) => stamp(f, 0, up ? 0 : 1, up ? EAR_UP : EAR, dx);
-const eyes = (f: Uint8Array, l: string[], r: string[], dx = 0) => { stamp(f, 11, 4, l, dx); stamp(f, 15, 4, r, dx); };
+const nose = (f: Uint8Array, dx = 0) => ellipse(f, 25.5, 10, 4, 3.1, 2, dx); // big snout nose
+const ear = (f: Uint8Array, up = false, dx = 0) => stamp(f, 1, up ? 0 : 1, up ? EAR_UP : EAR, dx);
+const eyes = (f: Uint8Array, l: string[], r: string[], dx = 0) => { stamp(f, 12, 4, l, dx); stamp(f, 16, 4, r, dx); };
 
 function frames(expr: Expr): Uint8Array[] {
   if (expr === "happy") {

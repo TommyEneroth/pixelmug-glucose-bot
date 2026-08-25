@@ -8,12 +8,12 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const W = 32, H = 16;
-// 0 bg,1 yellow,2 yellow-shade,3 black,4 white,5 red,6 blue,7 green,8 green-shade
+// 0 bg=LIGHT,1 yellow,2 yellow-shade,3 black,4 white,5 red,6 blue,7 green,8 green-shade,9 pellet
 const PALETTE: [number, number, number][] = [
-  [10, 10, 14], [255, 214, 60], [226, 182, 30], [20, 18, 10], [250, 250, 250],
-  [220, 50, 50], [110, 178, 250], [150, 205, 120], [110, 166, 86],
+  [232, 229, 222], [255, 214, 60], [226, 182, 30], [20, 18, 10], [250, 250, 250],
+  [220, 50, 50], [70, 150, 240], [150, 205, 120], [110, 166, 86], [92, 86, 98],
 ];
-const CH: Record<string, number> = { B: 3, W: 4, R: 5, V: 6, P: 3 };
+const CH: Record<string, number> = { B: 3, W: 4, R: 5, V: 6, P: 3, o: 9 };
 const blank = () => new Uint8Array(W * H).fill(0);
 
 const CX = 8, CY = 8, R = 7;
@@ -29,6 +29,15 @@ function pac(f: Uint8Array, green: boolean, mouth: number, dx = 0) {
       if (ang <= mouth) continue; // carve the mouth wedge
       f[y * W + x] = y >= CY + 3 ? shade : base;
     }
+  // 1px black outline (disc edge + mouth) so it reads on the light ceramic
+  const out: number[] = [];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      if (f[y * W + x] !== 0) continue;
+      const b = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && (f[yy * W + xx] === base || f[yy * W + xx] === shade);
+      if (b(x - 1, y) || b(x + 1, y) || b(x, y - 1) || b(x, y + 1)) out.push(y * W + x);
+    }
+  for (const i of out) f[i] = 3;
 }
 function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
   for (let r = 0; r < s.length; r++) for (let c = 0; c < s[r].length; c++) {
@@ -42,7 +51,7 @@ function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
 const EYE = ["BB"];
 const EYE_WIDE = ["WW", "BB"];
 const EYE_X = ["B.B", ".B.", "B.B"];
-const PELLET = ["WW", "WW"];
+const PELLET = ["oo", "oo"]; // dark pellet (white would vanish on the light ceramic)
 const GHOST = [
   "..RRRR..", ".RRRRRR.", "RWWRRWWR", "RWBRRWBR", "RRRRRRRR", "RRRRRRRR", "R.RR.RR.",
 ];

@@ -20,7 +20,7 @@ const H = 16;
 // skin hi/base/shade 2-4, pale 5-7, green 8-10,
 // 11 white, 12 red, 13 red-dark, 14 sweat, 15 cheek
 const PALETTE: [number, number, number][] = [
-  [12, 12, 16],
+  [232, 229, 222], // 0 bg = light ceramic (the mug shows what you send; the head has a dark outline)
   [15, 15, 15],
   [246, 221, 176], [232, 200, 148], [196, 160, 106],
   [226, 231, 241], [204, 210, 223], [168, 176, 196],

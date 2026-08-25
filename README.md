@@ -8,9 +8,9 @@ It reads [Dexcom Share](https://www.dexcom.com/) in real time, decides how it fe
 the matching animated 32×16 face on the mug via a [Bubble](https://github.com/bubble-im) bot.
 
 <p align="center">
-  <img src="docs/faces_overview.png" width="640" alt="The six glucose faces"><br>
-  <em>The faces (upscaled — the mug renders the real 32×16). The head fills the whole canvas
-  edge-to-edge, with shaded skin tones and an animated mouth per mood.</em>
+  <img src="docs/face_overview.png" width="640" alt="The six glucose faces"><br>
+  <em>The built-in faces (upscaled — the mug renders the real 32×16 on light ceramic). The head
+  fills the canvas, with a dark outline, shaded skin tones and an animated mouth per mood.</em>
 </p>
 
 ## What the face means
@@ -140,13 +140,17 @@ The mug shows the pixels you send, on **light ceramic**. So design on a **light 
 - **Black and bright saturated colours** (yellow, green, red) read well on the light ceramic;
   pale/light colours wash out.
 
-Preview any pack GIF as it'll look on the device:
+Preview any pack GIF as it'll look on the device — the mockup is an **animated GIF** of the mug
+playing the animation:
 
 ```bash
-python3 scripts/mug_mockup.py packs/snobben/happy.gif docs/mug.png
+python3 scripts/mug_mockup.py packs/snobben/happy.gif docs/mug.gif
 ```
 
-<p align="center"><img src="docs/mug_snobben_happy.png" width="440" alt="Snobben on the mug"></p>
+<p align="center">
+  <img src="docs/mug_snobben_happy.gif" width="360" alt="Snobben on the mug">
+  <img src="docs/mug_pacman_happy.gif" width="360" alt="Pac-Man on the mug">
+</p>
 
 ## Project layout
 

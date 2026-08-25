@@ -1,78 +1,73 @@
 #!/usr/bin/env python3
-"""Render a realistic PixelMug mockup: a white ceramic mug whose display shows the
+"""Render an ANIMATED PixelMug mockup: a white ceramic mug whose display plays the
 32x16 GIF. Off/background pixels render as the light ceramic (as on the real mug);
-lit pixels are drawn in colour (bright ones glow a little), dark pixels show dark.
+other pixels are drawn crisply in colour.
 
-Usage:  python3 scripts/mug_mockup.py <gif> [out.png]
+Usage:  python3 scripts/mug_mockup.py <gif> [out.gif]
 """
 import sys
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 
 GIF = sys.argv[1] if len(sys.argv) > 1 else "packs/snobben/happy.gif"
-OUT = sys.argv[2] if len(sys.argv) > 2 else "docs/mug_mockup.png"
+OUT = sys.argv[2] if len(sys.argv) > 2 else "docs/mug_mockup.gif"
 
 GW, GH = 32, 16
-frame = Image.open(GIF).convert("RGB")
-if frame.size != (GW, GH):
-    frame = frame.resize((GW, GH), Image.NEAREST)
-px = frame.load()
-BG = px[0, 0]  # the design's background colour = "off" = show ceramic
+src = Image.open(GIF)
+
+# collect frames (RGB, 32x16) and their durations
+frames_rgb, durations = [], []
+try:
+    i = 0
+    while True:
+        src.seek(i)
+        f = src.convert("RGB")
+        if f.size != (GW, GH):
+            f = f.resize((GW, GH), Image.NEAREST)
+        frames_rgb.append(f)
+        durations.append(src.info.get("duration", 300))
+        i += 1
+except EOFError:
+    pass
+
+BG = frames_rgb[0].getpixel((0, 0))  # design background = "off" = ceramic
 
 
 def is_off(c):
-    return abs(c[0] - BG[0]) + abs(c[1] - BG[1]) + abs(c[2] - BG[2]) < 24
+    return abs(c[0] - BG[0]) + abs(c[1] - BG[1]) + abs(c[2] - BG[2]) < 28
 
 
-Wd, Hd = 760, 600
+Wd, Hd = 720, 560
 CERAMIC = (240, 238, 232)
-img = Image.new("RGB", (Wd, Hd), (224, 219, 212))
-d = ImageDraw.Draw(img)
 
-# ---- ceramic mug body + handle ----
-bx0, by0, bx1, by1 = 130, 110, 560, 500
-d.rounded_rectangle([bx0, by0, bx1, by1], radius=48, fill=CERAMIC, outline=(198, 194, 186), width=3)
-d.arc([bx1 - 26, 200, bx1 + 120, 400], start=300, end=60, fill=(198, 194, 186), width=24)
-# gentle right-side shading
-sh = Image.new("RGBA", (Wd, Hd), (0, 0, 0, 0))
-ImageDraw.Draw(sh).rounded_rectangle([bx1 - 120, by0, bx1, by1], radius=48, fill=(150, 146, 140, 45))
-img = Image.alpha_composite(img.convert("RGBA"), sh).convert("RGB")
-d = ImageDraw.Draw(img)
+# ---- static mug base (drawn once) ----
+base = Image.new("RGB", (Wd, Hd), (223, 218, 211))
+d = ImageDraw.Draw(base)
+bx0, by0, bx1, by1 = 120, 100, 540, 480
+d.rounded_rectangle([bx0, by0, bx1, by1], radius=46, fill=CERAMIC, outline=(198, 194, 186), width=3)
+d.rounded_rectangle([bx1 - 96, by0 + 3, bx1 - 3, by1 - 3], radius=44, fill=(230, 227, 220))  # soft right shade
+d.arc([bx1 - 24, 190, bx1 + 116, 390], start=300, end=60, fill=(198, 194, 186), width=22)
 
-# ---- display area (same ceramic; pixels are printed onto it) ----
-cell = 10.6
-gap = 1.4
-mw, mh = GW * cell, GH * cell
-ox = (Wd - mw) / 2
-oy = by0 + 70
+cell = 10.0
+gap = 1.3
+ox = (Wd - GW * cell) / 2
+oy = by0 + 66
 
-# glow overlay for bright pixels
-glow = Image.new("RGBA", (Wd, Hd), (0, 0, 0, 0))
-dg = ImageDraw.Draw(glow)
-for gy in range(GH):
-    for gx in range(GW):
-        c = px[gx, gy]
-        if is_off(c):
-            continue
-        if max(c) > 150:  # bright -> bloom
-            cx = ox + gx * cell + cell / 2
-            cy = oy + gy * cell + cell / 2
-            dg.ellipse([cx - cell, cy - cell, cx + cell, cy + cell],
-                       fill=(c[0], c[1], c[2], 70))
-glow = glow.filter(ImageFilter.GaussianBlur(5))
-img = Image.alpha_composite(img.convert("RGBA"), glow).convert("RGB")
-d = ImageDraw.Draw(img)
+out_frames = []
+for fr in frames_rgb:
+    img = base.copy()
+    dd = ImageDraw.Draw(img)
+    p = fr.load()
+    for gy in range(GH):
+        for gx in range(GW):
+            c = p[gx, gy]
+            if is_off(c):
+                continue
+            x0 = ox + gx * cell + gap
+            y0 = oy + gy * cell + gap
+            dd.rounded_rectangle([x0, y0, ox + (gx + 1) * cell - gap, oy + (gy + 1) * cell - gap],
+                                 radius=2, fill=c)
+    out_frames.append(img.convert("P", palette=Image.ADAPTIVE, colors=128))
 
-# draw the pixels as rounded squares (off = leave ceramic)
-for gy in range(GH):
-    for gx in range(GW):
-        c = px[gx, gy]
-        if is_off(c):
-            continue
-        x0 = ox + gx * cell + gap
-        y0 = oy + gy * cell + gap
-        x1 = ox + (gx + 1) * cell - gap
-        y1 = oy + (gy + 1) * cell - gap
-        d.rounded_rectangle([x0, y0, x1, y1], radius=2, fill=c)
-
-img.save(OUT)
-print("wrote", OUT, img.size, "bg(off)=", BG)
+out_frames[0].save(OUT, save_all=True, append_images=out_frames[1:],
+                   duration=durations, loop=0, disposal=1, optimize=True)
+print("wrote", OUT, f"{len(out_frames)} frames")
