@@ -12,6 +12,7 @@
     "gen-snobben": "bun run src/gen-snobben.ts",
     "gen-emoji": "bun run src/gen-emoji.ts",
     "gen-pacman": "bun run src/gen-pacman.ts",
+    "gen-mumin": "bun run src/gen-mumin.ts",
     "test": "bun test"
   },
   "dependencies": {
