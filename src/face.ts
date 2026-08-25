@@ -79,7 +79,17 @@ const EYE_WIDE = ["WWWW", "WWWW", "WPWW", "WWWW"]; // scared
 const EYE_X = ["P.P", ".P.", "P.P"];
 const EYE_SLEEP = ["...", "PPP", "..."];
 
-const MOUTH_GRIN = [" ##### ", "#RRRRR#", "#T#T#T#", " ##### "];
+// eyebrows (black). Position + tilt carry the emotion.
+const BROW_FLAT = ["###"];
+const BROW_UP_L = [".##", "#.."]; // outer-up (left)  \
+const BROW_UP_R = ["##.", "..#"]; // outer-up (right) /
+const BROW_ANGRY_L = ["#..", ".##"]; // inner-down (left)  /
+const BROW_ANGRY_R = ["..#", "##."]; // inner-down (right) \
+
+// crooked NOT-man moustache (black), lopsided — left tip up, right tip low
+const MOUSTACHE = ["##......#.", "#####.####"];
+
+const MOUTH_GRIN = [" ####### ", "#RRRRRRR#", "#T#T#T#T#", " ##RRR## "]; // big toothy grin
 const MOUTH_FROWN = [".####.", "#....#"]; // small ∩
 const MOUTH_O = [".####.", "#RRRR#", "#RRRR#", ".####."];
 const MOUTH_WAVY = ["##..##..#", "..##..##."];
@@ -103,45 +113,57 @@ export function expressionForLevel(level: Level): Expr {
 /** Build the animation frames for an expression. */
 function frames(expr: Expr): Uint8Array[] {
   const eyes = (f: Uint8Array, l: string[], r: string[], dx = 0) => {
-    stamp(f, 9, 5, l, dx);
-    stamp(f, 19, 5, r, dx);
+    stamp(f, 9, 4, l, dx);
+    stamp(f, 19, 4, r, dx);
   };
+  const brows = (f: Uint8Array, l: string[], r: string[], y = 2, dx = 0) => {
+    stamp(f, 9, y, l, dx);
+    stamp(f, 20, y, r, dx);
+  };
+  const stache = (f: Uint8Array, dx = 0) => stamp(f, 11, 8, MOUSTACHE, dx);
 
   if (expr === "happy") {
-    const a = head(SKIN); eyes(a, EYE_OPEN, EYE_OPEN); stamp(a, 12, 10, MOUTH_GRIN);
-    const b = head(SKIN); eyes(b, EYE_BLINK, EYE_BLINK); stamp(b, 12, 10, MOUTH_GRIN);
+    // crooked brow (one raised) + moustache + big toothy grin = NOT-man
+    const a = head(SKIN); brows(a, BROW_FLAT, BROW_UP_R, 2); eyes(a, EYE_OPEN, EYE_OPEN); stache(a); stamp(a, 11, 10, MOUTH_GRIN);
+    const b = head(SKIN); brows(b, BROW_FLAT, BROW_UP_R, 2); eyes(b, EYE_BLINK, EYE_BLINK); stache(b); stamp(b, 11, 10, MOUTH_GRIN);
     return [a, a, a, b]; // mostly open, quick blink
   }
 
   if (expr === "worried") {
-    const a = head(PALE); eyes(a, EYE_DOWN, EYE_DOWN); stamp(a, 13, 12, MOUTH_FROWN); stamp(a, 25, 5, SWEAT);
-    const b = head(PALE); eyes(b, EYE_DOWN, EYE_DOWN); stamp(b, 13, 12, MOUTH_FROWN); stamp(b, 25, 8, SWEAT);
-    return [a, b];
+    const mk = (sy: number) => {
+      const f = head(PALE); brows(f, BROW_UP_L, BROW_UP_R, 1); eyes(f, EYE_DOWN, EYE_DOWN);
+      stache(f); stamp(f, 13, 12, MOUTH_FROWN); stamp(f, 25, sy, SWEAT); return f;
+    };
+    return [mk(5), mk(8)]; // sweat drips
   }
 
   if (expr === "panic") {
-    const a = head(PALE, 0); eyes(a, EYE_WIDE, EYE_WIDE, 0); stamp(a, 13, 9, MOUTH_O);
-    stamp(a, 5, 5, SWEAT); stamp(a, 26, 5, SWEAT);
-    const b = head(PALE, 1); eyes(b, EYE_WIDE, EYE_WIDE, 1); stamp(b, 14, 9, MOUTH_O);
-    stamp(b, 5, 8, SWEAT); stamp(b, 26, 8, SWEAT);
-    return [a, b]; // shake + sweat
+    const mk = (dx: number, sy: number) => {
+      const f = head(PALE, dx); brows(f, BROW_FLAT, BROW_FLAT, 1, dx); eyes(f, EYE_WIDE, EYE_WIDE, dx);
+      stache(f, dx); stamp(f, 13 + dx, 10, MOUTH_O); stamp(f, 5, sy, SWEAT); stamp(f, 26, sy, SWEAT); return f;
+    };
+    return [mk(0, 5), mk(1, 8)]; // shake + sweat
   }
 
   if (expr === "queasy") {
-    const a = head(GREEN); eyes(a, EYE_BLINK, EYE_DOWN); stamp(a, 11, 12, MOUTH_WAVY);
-    const b = head(GREEN); eyes(b, EYE_DOWN, EYE_BLINK); stamp(b, 11, 12, MOUTH_WAVY);
-    return [a, b];
+    const mk = (l: string[], r: string[]) => {
+      const f = head(GREEN); brows(f, BROW_ANGRY_L, BROW_ANGRY_R, 3); eyes(f, l, r);
+      stache(f); stamp(f, 11, 12, MOUTH_WAVY); return f;
+    };
+    return [mk(EYE_BLINK, EYE_DOWN), mk(EYE_DOWN, EYE_BLINK)];
   }
 
   if (expr === "sick") {
-    const a = head(GREEN, 0); eyes(a, EYE_X, EYE_X); stamp(a, 13, 10, MOUTH_TONGUE);
-    const b = head(GREEN, 1); eyes(b, EYE_X, EYE_X, 1); stamp(b, 14, 10, MOUTH_TONGUE);
-    return [a, b];
+    const mk = (dx: number) => {
+      const f = head(GREEN, dx); brows(f, BROW_ANGRY_L, BROW_ANGRY_R, 2, dx); eyes(f, EYE_X, EYE_X, dx);
+      stache(f, dx); stamp(f, 13 + dx, 10, MOUTH_TONGUE); return f;
+    };
+    return [mk(0), mk(1)]; // wobble
   }
 
-  // sleep
-  const a = head(SKIN); eyes(a, EYE_SLEEP, EYE_SLEEP); stamp(a, 13, 12, MOUTH_FROWN);
-  return [a];
+  // sleep — closed eyes, moustache, no brows
+  const s = head(SKIN); eyes(s, EYE_SLEEP, EYE_SLEEP); stache(s); stamp(s, 13, 12, MOUTH_FROWN);
+  return [s];
 }
 
 function encode(fr: Uint8Array[], scale: number, delay: number): Uint8Array {
