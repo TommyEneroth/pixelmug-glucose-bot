@@ -132,12 +132,15 @@ for personal use on your own mug.
 
 ### Designing for the LED — and previewing on the mug
 
-On the mug the screen is black and **"black" pixels are just OFF** — they vanish into the
-background. So black works *inside* a lit shape (eyes/nose read as holes in a lit face), but a
-black shape *on the background* (like a black ear) is invisible. Give such shapes a lit colour
-instead (Snobben's ear is a dim grey, not black).
+The mug shows the pixels you send, on **light ceramic**. So design on a **light background**
+(index 0 = a ceramic tone), and make figures read against it:
 
-Preview any pack GIF as it'll look on the device — a glowing LED matrix on a ceramic mug:
+- A **white/pale shape needs a dark outline** or it disappears into the ceramic — Snobben has a
+  black outline plus a black ear and nose.
+- **Black and bright saturated colours** (yellow, green, red) read well on the light ceramic;
+  pale/light colours wash out.
+
+Preview any pack GIF as it'll look on the device:
 
 ```bash
 python3 scripts/mug_mockup.py packs/snobben/happy.gif docs/mug.png

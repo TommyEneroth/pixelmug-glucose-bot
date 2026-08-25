@@ -15,9 +15,11 @@ const W = 32, H = 16;
 // NOTE: on the mug's LED screen "black" = OFF pixels (invisible on the black
 // background). Black is fine INSIDE the lit white head (eyes/nose read as holes),
 // but the ear sits on the background, so it uses a lit dark-gray ('E') instead.
+// index 0 = background: LIGHT ceramic, because the mug shows the pixels you send
+// (a dark bg would make a dark screen). Figures use a black outline to read on it.
 const PALETTE: [number, number, number][] = [
-  [10, 10, 14], [245, 245, 245], [20, 20, 20], [206, 206, 212],
-  [210, 50, 50], [200, 230, 190], [168, 202, 158], [110, 178, 250], [162, 166, 188],
+  [232, 229, 222], [248, 248, 248], [20, 20, 20], [205, 205, 210],
+  [210, 50, 50], [150, 205, 120], [110, 166, 86], [70, 150, 240], [162, 166, 188],
 ];
 const CH: Record<string, number> = { B: 2, W: 1, R: 4, V: 7, E: 8 };
 const blank = () => new Uint8Array(W * H).fill(0);
@@ -30,7 +32,8 @@ function ellipse(f: Uint8Array, cx: number, cy: number, rx: number, ry: number, 
     }
 }
 
-/** Head (round) + snout (juts right), white or green, shaded along the bottom. */
+/** Head (round) + snout (juts right), white or green, with a black outline so it
+ * reads on the mug's LIGHT ceramic background (off pixels = ceramic, not black). */
 function head(green = false, dx = 0): Uint8Array {
   const f = blank();
   const base = green ? 5 : 1, sh = green ? 6 : 3;
@@ -38,6 +41,16 @@ function head(green = false, dx = 0): Uint8Array {
   ellipse(f, 24, 10, 8, 4, base, dx); // snout (extended right so the nose gets a white ring)
   for (let y = 12; y < H; y++)
     for (let x = 0; x < W; x++) if (f[y * W + x] === base) f[y * W + x] = sh;
+  // 1px black outline around the body silhouette
+  const body = (i: number) => f[i] === base || f[i] === sh;
+  const out: number[] = [];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      if (f[y * W + x] !== 0) continue;
+      const nb = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && body(yy * W + xx);
+      if (nb(x - 1, y) || nb(x + 1, y) || nb(x, y - 1) || nb(x, y + 1)) out.push(y * W + x);
+    }
+  for (const i of out) f[i] = 2;
   return f;
 }
 function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
@@ -49,15 +62,15 @@ function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
   }
 }
 
-// long floppy ear at the back (left). Uses 'E' (lit grey) so it shows on the
-// mug's LED screen instead of vanishing into the black background. Bigger = clearer.
+// long floppy BLACK ear at the back (left) — Snoopy's signature. Black reads well
+// on the light ceramic background. Bigger = clearer.
 const EAR = [
-  "EEEE...", "EEEEE..", "EEEEEE.", "EEEEEE.", "EEEEEE.",
-  "EEEEEE.", ".EEEEEE", ".EEEEE.", ".EEEEE.", "..EEEE.", "..EEE..", "...EE..",
+  "BBBB...", "BBBBB..", "BBBBBB.", "BBBBBB.", "BBBBBB.",
+  "BBBBBB.", ".BBBBBB", ".BBBBB.", ".BBBBB.", "..BBBB.", "..BBB..", "...BB..",
 ];
 const EAR_UP = [
-  "....EEE", "..EEEEEE", ".EEEEEE.", "EEEEEEE.", "EEEEEE..",
-  "EEEEE...", "EEEE....", ".EEEE...", ".EEE....",
+  "....BBB", "..BBBBBB", ".BBBBBB.", "BBBBBBB.", "BBBBBB..",
+  "BBBBB...", "BBBB....", ".BBBB...", ".BBB....",
 ];
 
 const EYE = ["B", "B"];
