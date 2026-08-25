@@ -17,7 +17,7 @@ const W = 32, H = 16;
 // but the ear sits on the background, so it uses a lit dark-gray ('E') instead.
 const PALETTE: [number, number, number][] = [
   [10, 10, 14], [245, 245, 245], [20, 20, 20], [206, 206, 212],
-  [210, 50, 50], [200, 230, 190], [168, 202, 158], [110, 178, 250], [118, 120, 132],
+  [210, 50, 50], [200, 230, 190], [168, 202, 158], [110, 178, 250], [162, 166, 188],
 ];
 const CH: Record<string, number> = { B: 2, W: 1, R: 4, V: 7, E: 8 };
 const blank = () => new Uint8Array(W * H).fill(0);
@@ -35,7 +35,7 @@ function head(green = false, dx = 0): Uint8Array {
   const f = blank();
   const base = green ? 5 : 1, sh = green ? 6 : 3;
   ellipse(f, 12, 7, 9, 6, base, dx); // skull
-  ellipse(f, 23, 10, 7, 4, base, dx); // snout
+  ellipse(f, 24, 10, 8, 4, base, dx); // snout (extended right so the nose gets a white ring)
   for (let y = 12; y < H; y++)
     for (let x = 0; x < W; x++) if (f[y * W + x] === base) f[y * W + x] = sh;
   return f;
@@ -49,10 +49,16 @@ function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
   }
 }
 
-// long floppy ear at the back (left). Uses 'E' (lit dark-gray) so it shows on the
-// mug's LED screen instead of vanishing into the black background.
-const EAR = ["EEE..", "EEEE.", "EEEE.", "EEEEE", "EEEEE", ".EEEE", ".EEEE", ".EEE.", "..EE.", "..E.."];
-const EAR_UP = ["...EE", "..EEEE", ".EEEEE", "EEEEE.", "EEEE..", "EEE...", ".EE...", ".EE..."];
+// long floppy ear at the back (left). Uses 'E' (lit grey) so it shows on the
+// mug's LED screen instead of vanishing into the black background. Bigger = clearer.
+const EAR = [
+  "EEEE...", "EEEEE..", "EEEEEE.", "EEEEEE.", "EEEEEE.",
+  "EEEEEE.", ".EEEEEE", ".EEEEE.", ".EEEEE.", "..EEEE.", "..EEE..", "...EE..",
+];
+const EAR_UP = [
+  "....EEE", "..EEEEEE", ".EEEEEE.", "EEEEEEE.", "EEEEEE..",
+  "EEEEE...", "EEEE....", ".EEEE...", ".EEE....",
+];
 
 const EYE = ["B", "B"];
 const EYE_HAPPY = ["BB"];      // content squint
@@ -66,7 +72,7 @@ const MOUTH_TONGUE = ["BBB", "BRB", ".R."];
 const SWEAT = ["V", "V"];
 
 type Expr = "happy" | "worried" | "panic" | "queasy" | "sick" | "sleep";
-const nose = (f: Uint8Array, dx = 0) => ellipse(f, 27, 9, 3, 2.6, 2, dx);
+const nose = (f: Uint8Array, dx = 0) => ellipse(f, 26, 10, 3.6, 2.8, 2, dx); // bigger snout nose
 const ear = (f: Uint8Array, up = false, dx = 0) => stamp(f, 0, up ? 0 : 1, up ? EAR_UP : EAR, dx);
 const eyes = (f: Uint8Array, l: string[], r: string[], dx = 0) => { stamp(f, 11, 4, l, dx); stamp(f, 15, 4, r, dx); };
 
