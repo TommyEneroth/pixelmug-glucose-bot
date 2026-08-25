@@ -11,12 +11,15 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const W = 32, H = 16;
-// 0 bg,1 white,2 black,3 white-shade,4 red,5 green,6 green-shade,7 sweat
+// 0 bg,1 white,2 black,3 white-shade,4 red,5 green,6 green-shade,7 sweat,8 ear-gray
+// NOTE: on the mug's LED screen "black" = OFF pixels (invisible on the black
+// background). Black is fine INSIDE the lit white head (eyes/nose read as holes),
+// but the ear sits on the background, so it uses a lit dark-gray ('E') instead.
 const PALETTE: [number, number, number][] = [
   [10, 10, 14], [245, 245, 245], [20, 20, 20], [206, 206, 212],
-  [210, 50, 50], [200, 230, 190], [168, 202, 158], [110, 178, 250],
+  [210, 50, 50], [200, 230, 190], [168, 202, 158], [110, 178, 250], [118, 120, 132],
 ];
-const CH: Record<string, number> = { B: 2, W: 1, R: 4, V: 7 };
+const CH: Record<string, number> = { B: 2, W: 1, R: 4, V: 7, E: 8 };
 const blank = () => new Uint8Array(W * H).fill(0);
 
 function ellipse(f: Uint8Array, cx: number, cy: number, rx: number, ry: number, color: number, dx = 0) {
@@ -46,9 +49,10 @@ function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
   }
 }
 
-// long floppy black ear at the back (left)
-const EAR = ["BBB..", "BBBB.", "BBBB.", "BBBBB", "BBBBB", ".BBBB", ".BBBB", ".BBB.", "..BB.", "..B.."];
-const EAR_UP = ["...BB", "..BBBB", ".BBBBB", "BBBBB.", "BBBB..", "BBB...", ".BB...", ".BB..."];
+// long floppy ear at the back (left). Uses 'E' (lit dark-gray) so it shows on the
+// mug's LED screen instead of vanishing into the black background.
+const EAR = ["EEE..", "EEEE.", "EEEE.", "EEEEE", "EEEEE", ".EEEE", ".EEEE", ".EEE.", "..EE.", "..E.."];
+const EAR_UP = ["...EE", "..EEEE", ".EEEEE", "EEEEE.", "EEEE..", "EEE...", ".EE...", ".EE..."];
 
 const EYE = ["B", "B"];
 const EYE_HAPPY = ["BB"];      // content squint
