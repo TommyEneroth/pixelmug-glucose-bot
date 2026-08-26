@@ -9,7 +9,14 @@ object Alerts {
     const val HIGH_URGENT = 14.0
     const val PRED_WINDOW_MIN = 20.0
 
-    data class Assessment(val level: String, val expr: String, val current: Double, val predicted: Double)
+    data class Assessment(
+        val level: String, val expr: String,
+        val current: Double, val predicted: Double, val arrow: String,
+    )
+
+    private fun arrowOf(slope: Double) = when {
+        slope > 0.05 -> "↗"; slope < -0.05 -> "↘"; else -> "→"
+    }
 
     /** Least-squares slope (mmol/min) over the last 20 min, dedup + span guarded. */
     private fun slopePerMin(readings: List<Reading>): Double {
@@ -32,14 +39,15 @@ object Alerts {
     }
 
     fun assess(readings: List<Reading>, nowMs: Long): Assessment {
-        if (readings.isEmpty()) return Assessment("unknown", "sleep", Double.NaN, Double.NaN)
+        if (readings.isEmpty()) return Assessment("unknown", "sleep", Double.NaN, Double.NaN, "→")
         val last = readings.last()
         val cur = last.mmol
         val ageMin = (nowMs - last.ts) / 60000.0
-        if (cur <= 0) return Assessment("unknown", "sleep", cur, Double.NaN)
+        if (cur <= 0) return Assessment("unknown", "sleep", cur, Double.NaN, "→")
         val slope = slopePerMin(readings)
+        val arrow = arrowOf(slope)
         val pred = max(1.0, min(30.0, cur + slope * PRED_WINDOW_MIN))
-        if (ageMin > 16) return Assessment("stale", "sleep", cur, pred)
+        if (ageMin > 16) return Assessment("stale", "sleep", cur, pred, arrow)
 
         val level = when {
             cur <= LOW_URGENT -> "urgentLow"
@@ -48,7 +56,7 @@ object Alerts {
             slope > 0 && pred >= HIGH_URGENT -> "predHigh"
             else -> "ok"
         }
-        return Assessment(level, expressionForLevel(level), cur, pred)
+        return Assessment(level, expressionForLevel(level), cur, pred, arrow)
     }
 
     fun expressionForLevel(level: String): String = when (level) {

@@ -31,7 +31,19 @@ class MainActivity : AppCompatActivity() {
         val gifBase = findViewById<EditText>(R.id.gifBase)
         val pack = findViewById<RadioGroup>(R.id.pack)
         val preview = findViewById<ImageView>(R.id.preview)
+        val mode = findViewById<RadioGroup>(R.id.mode)
+        val tplLow = findViewById<EditText>(R.id.tplLow)
+        val tplHigh = findViewById<EditText>(R.id.tplHigh)
+        val tplPredLow = findViewById<EditText>(R.id.tplPredLow)
+        val tplPredHigh = findViewById<EditText>(R.id.tplPredHigh)
+        val tplOk = findViewById<EditText>(R.id.tplOk)
+        val tplStale = findViewById<EditText>(R.id.tplStale)
         val status = findViewById<TextView>(R.id.status)
+
+        mode.check(when (prefs.mode) { "text" -> R.id.modeText; "graph" -> R.id.modeGraph; else -> R.id.modeFace })
+        tplLow.setText(prefs.tplLow); tplHigh.setText(prefs.tplHigh)
+        tplPredLow.setText(prefs.tplPredLow); tplPredHigh.setText(prefs.tplPredHigh)
+        tplOk.setText(prefs.tplOk); tplStale.setText(prefs.tplStale)
 
         token.setText(prefs.token)
         dexUser.setText(prefs.dexUser)
@@ -66,6 +78,12 @@ class MainActivity : AppCompatActivity() {
                 R.id.packMumin -> "mumin"; R.id.packPacman -> "pacman"
                 R.id.packEmoji -> "emoji"; R.id.packNotman -> "notman"; else -> "snobben"
             }
+            prefs.mode = when (mode.checkedRadioButtonId) {
+                R.id.modeText -> "text"; R.id.modeGraph -> "graph"; else -> "face"
+            }
+            prefs.tplLow = tplLow.text.toString(); prefs.tplHigh = tplHigh.text.toString()
+            prefs.tplPredLow = tplPredLow.text.toString(); prefs.tplPredHigh = tplPredHigh.text.toString()
+            prefs.tplOk = tplOk.text.toString(); prefs.tplStale = tplStale.text.toString()
         }
 
         findViewById<Button>(R.id.btnCapture).setOnClickListener {
@@ -85,17 +103,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnTest).setOnClickListener {
-            save(); status.text = "Skickar testbild…"
+            save(); status.text = "Skickar test…"
             scope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
                         if (prefs.chat.isBlank()) return@withContext "Koppla muggen först."
                         val bot = BubbleBot(prefs.token)
-                        val url = prefs.gifUrl("happy")
-                        val size = bot.gifSize(url)
-                        if (size <= 0L) return@withContext "GIF saknas: $url"
-                        bot.pushGif(JSONObject(prefs.chat), url, size)
-                        "Skickade happy ($size B) → muggen"
+                        when (prefs.mode) {
+                            "text" -> {
+                                val txt = prefs.tplLow.replace("{v}", "2.9").replace("{arr}", "↘").replace("{pred}", "2.0").trim()
+                                if (txt.isBlank()) return@withContext "Tom mall."
+                                bot.pushText(JSONObject(prefs.chat), txt, "#ff2b2b")
+                                "Skickade text: \"$txt\""
+                            }
+                            "graph" -> "Graf-läget är inte klart än."
+                            else -> {
+                                val url = prefs.gifUrl("happy")
+                                val size = bot.gifSize(url)
+                                if (size <= 0L) return@withContext "GIF saknas: $url"
+                                bot.pushGif(JSONObject(prefs.chat), url, size)
+                                "Skickade happy ($size B)"
+                            }
+                        }
                     } catch (e: Exception) { "Fel: ${e.message}" }
                 }
                 status.text = res

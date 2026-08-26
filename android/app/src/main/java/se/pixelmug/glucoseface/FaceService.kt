@@ -56,13 +56,42 @@ class FaceService : Service() {
 
         val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(3)
         val a = Alerts.assess(readings, System.currentTimeMillis())
-        val url = prefs.gifUrl(a.expr)
+        val chat = JSONObject(chatStr)
         val bot = BubbleBot(token)
-        val size = bot.gifSize(url)
-        if (size <= 0L) return "GIF saknas på: $url"
-        bot.pushGif(JSONObject(chatStr), url, size)
         val cur = if (a.current.isNaN()) "?" else String.format("%.1f", a.current)
-        return "$cur mmol (${a.level}) → ${a.expr}"
+
+        return when (prefs.mode) {
+            "text" -> {
+                val (tmpl, color) = templateFor(a.level)
+                val txt = fill(tmpl, a)
+                if (txt.isBlank()) return "$cur (${a.level}) — tom mall, hoppar över."
+                bot.pushText(chat, txt, color)
+                "${a.level}: \"$txt\" — text skickad"
+            }
+            "graph" -> "Graf-läget kräver hosting (byggs härnäst)."
+            else -> {
+                val url = prefs.gifUrl(a.expr)
+                val size = bot.gifSize(url)
+                if (size <= 0L) return "GIF saknas på: $url"
+                bot.pushGif(chat, url, size)
+                "$cur mmol (${a.level}) → ${a.expr}"
+            }
+        }
+    }
+
+    private fun templateFor(level: String): Pair<String, String> = when (level) {
+        "urgentLow" -> prefs.tplLow to "#ff2b2b"
+        "urgentHigh" -> prefs.tplHigh to "#ff2b2b"
+        "predLow" -> prefs.tplPredLow to "#ff2b2b"
+        "predHigh" -> prefs.tplPredHigh to "#ff9500"
+        "stale", "unknown" -> prefs.tplStale to "#9a9aa2"
+        else -> prefs.tplOk to "#3cc85a"
+    }
+
+    private fun fill(t: String, a: Alerts.Assessment): String {
+        val v = if (a.current.isNaN()) "?" else String.format("%.1f", a.current)
+        val pred = if (a.predicted.isNaN()) "?" else String.format("%.1f", a.predicted)
+        return t.replace("{v}", v).replace("{arr}", a.arrow).replace("{pred}", pred).trim()
     }
 
     private fun update(text: String) {

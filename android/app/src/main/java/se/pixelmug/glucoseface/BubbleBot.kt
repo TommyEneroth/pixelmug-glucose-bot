@@ -60,6 +60,32 @@ class BubbleBot(private val token: String) {
         post("$base/bot/device/msg", body)
     }
 
+    /** Generate a scrolling-text font via jeejio (no hosting needed) -> (size, url). */
+    private fun makeFont(text: String, color: String): Pair<Long, String> {
+        val body = JSONObject()
+            .put("token", "677fb12b-646d-41b2-9149-9933de02b9d7") // jeejio font service token
+            .put("text", text).put("color", color).put("specifications", "SMALL")
+        val res = JSONObject(post("$base/cup/textToFontAssociation", body))
+        val r = res.optJSONObject("result") ?: throw RuntimeException("font: ${res.optString("message")}")
+        return Pair(r.optLong("size"), r.optString("binFileUrl"))
+    }
+
+    /** Scroll `text` across the mug in `color` (talPrintWithRemoteFont). */
+    fun pushText(chat: JSONObject, text: String, color: String) {
+        val (size, fontUrl) = makeFont(text, color)
+        val rpc = JSONObject().put("method", "talPrintWithRemoteFont").put("params",
+            JSONObject().put("text", text).put("speed", 60).put("direction", 1)
+                .put("fontContent", JSONObject().put("size", size)
+                    .put("type", "application/bin").put("url", fontUrl)))
+        val body = JSONObject()
+            .put("traceId", "and_" + System.currentTimeMillis())
+            .put("token", token)
+            .put("msg", JSONObject().put("value", rpc))
+            .put("slot", 1)
+            .put("chat", chat)
+        post("$base/bot/device/msg", body)
+    }
+
     /** Byte size of a GIF at `url` (talPlayGif wants the size). */
     fun gifSize(url: String): Long {
         val req = Request.Builder().url(url).get().build()

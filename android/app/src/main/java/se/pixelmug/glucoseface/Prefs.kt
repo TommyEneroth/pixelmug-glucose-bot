@@ -31,6 +31,28 @@ class Prefs(ctx: Context) {
         get() = sp.getString("pack", "snobben") ?: "snobben"
         set(v) = sp.edit().putString("pack", v).apply()
 
+    /** Display mode: "face" | "text" | "graph". */
+    var mode: String
+        get() = sp.getString("mode", "face") ?: "face"
+        set(v) = sp.edit().putString("mode", v).apply()
+
+    // Editable scroll-text templates. Placeholders: {v}=value, {arr}=arrow, {pred}=prediction.
+    private fun tpl(key: String, def: String) = sp.getString("tpl_$key", def) ?: def
+    private fun setTpl(key: String, v: String) = sp.edit().putString("tpl_$key", v).apply()
+
+    var tplLow: String
+        get() = tpl("low", "LÅGT {v} {arr} – ÄT NU"); set(v) = setTpl("low", v)
+    var tplHigh: String
+        get() = tpl("high", "HÖGT {v} {arr}!"); set(v) = setTpl("high", v)
+    var tplPredLow: String
+        get() = tpl("predlow", "SNART LÅGT {v} {arr} ~{pred} om 20 min"); set(v) = setTpl("predlow", v)
+    var tplPredHigh: String
+        get() = tpl("predhigh", "SNART HÖGT {v} {arr} ~{pred} om 20 min"); set(v) = setTpl("predhigh", v)
+    var tplOk: String
+        get() = tpl("ok", "{v} {arr}"); set(v) = setTpl("ok", v)
+    var tplStale: String
+        get() = tpl("stale", "GAMMALT {v}?"); set(v) = setTpl("stale", v)
+
     /** The Bubble chat (JSON) the mug is attached to; captured from the platform. */
     var chat: String
         get() = sp.getString("chat", "") ?: ""

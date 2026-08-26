@@ -22,7 +22,14 @@
         <EditText android:id="@+id/dexPass" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Dexcom-lösenord" android:inputType="textPassword" />
         <EditText android:id="@+id/gifBase" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="GIF bas-URL" android:inputType="textUri" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Paket:" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Läge:" />
+        <RadioGroup android:id="@+id/mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <RadioButton android:id="@+id/modeFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ansikte" android:checked="true" />
+            <RadioButton android:id="@+id/modeText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text" />
+            <RadioButton android:id="@+id/modeGraph" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Graf" />
+        </RadioGroup>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Paket (Ansikte-läge):" />
         <RadioGroup android:id="@+id/pack" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <RadioButton android:id="@+id/packSnobben" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Snobben (Snoopy)" android:checked="true" />
             <RadioButton android:id="@+id/packMumin" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mumin" />
@@ -40,6 +47,15 @@
             android:background="#F0EEE8"
             android:contentDescription="Förhandsvisning av paketet"
             android:scaleType="fitCenter" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="14dp"
+            android:text="Rulltexter (Text-läge). Platshållare: {v}=värde, {arr}=pil, {pred}=prognos" />
+        <EditText android:id="@+id/tplLow" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Akut lågt (≤3)" android:inputType="text" />
+        <EditText android:id="@+id/tplHigh" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Akut högt (≥14)" android:inputType="text" />
+        <EditText android:id="@+id/tplPredLow" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Förvarning lågt" android:inputType="text" />
+        <EditText android:id="@+id/tplPredHigh" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Förvarning högt" android:inputType="text" />
+        <EditText android:id="@+id/tplOk" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Normalt (i range) — lämna tomt för inget" android:inputType="text" />
+        <EditText android:id="@+id/tplStale" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Gammalt värde" android:inputType="text" />
 
         <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Koppla mugg (öppna Bubble, skicka /start)" />
         <Button android:id="@+id/btnTest" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Testa push (happy)" />
