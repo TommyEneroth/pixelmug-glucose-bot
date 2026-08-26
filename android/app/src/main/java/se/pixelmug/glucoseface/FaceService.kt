@@ -70,7 +70,14 @@ class FaceService : Service() {
                 "${a.level}: \"$txt\" — text skickad"
             }
             "graph" -> {
-                val gif = GraphRender.render(readings, now)
+                val warn = a.level in setOf("urgentLow", "urgentHigh", "predLow", "predHigh")
+                val gif = if (warn) {
+                    val (tmpl, color) = templateFor(a.level)
+                    val txt = fill(tmpl, a)
+                    val ci = if (color == "#ff9500") GraphRender.TXT_AMBER else GraphRender.TXT_RED
+                    if (txt.isBlank()) GraphRender.render(readings, now)
+                    else GraphRender.renderOverlay(readings, now, txt, ci) // text scrolls OVER the graph
+                } else GraphRender.render(readings, now)
                 val url = bot.uploadCatbox(gif)
                 if (!url.startsWith("http")) return "Uppladdning misslyckades: ${url.take(80)}"
                 bot.pushGif(chat, url, gif.size.toLong())

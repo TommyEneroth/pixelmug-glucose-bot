@@ -8,7 +8,15 @@ import java.io.ByteArrayOutputStream
  * gifenc) so any palette up to 256 colours works.
  */
 object Gif {
-    fun encode(width: Int, height: Int, palette: List<IntArray>, indices: ByteArray): ByteArray {
+    /** Single static frame. */
+    fun encode(width: Int, height: Int, palette: List<IntArray>, indices: ByteArray): ByteArray =
+        build(width, height, palette, listOf(indices), 0, false)
+
+    /** Looping animation; `delayCs` = per-frame delay in centiseconds. */
+    fun encodeAnimated(width: Int, height: Int, palette: List<IntArray>, frames: List<ByteArray>, delayCs: Int): ByteArray =
+        build(width, height, palette, frames, delayCs, true)
+
+    private fun build(width: Int, height: Int, palette: List<IntArray>, frames: List<ByteArray>, delayCs: Int, loop: Boolean): ByteArray {
         val bo = ByteArrayOutputStream()
         fun b(v: Int) = bo.write(v and 0xff)
         "GIF89a".forEach { b(it.code) }
@@ -20,16 +28,26 @@ object Gif {
             val c = if (i < palette.size) palette[i] else intArrayOf(0, 0, 0)
             b(c[0]); b(c[1]); b(c[2])
         }
-        b(0x2c); b(0); b(0); b(0); b(0)
-        b(width); b(width shr 8); b(height); b(height shr 8); b(0)
-        b(8) // LZW min code size
-        val lzw = lzw(8, indices)
-        var i = 0
-        while (i < lzw.size) {
-            val n = minOf(255, lzw.size - i)
-            b(n); for (j in 0 until n) b(lzw[i + j]); i += n
+        if (loop) { // NETSCAPE2.0 looping extension
+            b(0x21); b(0xff); b(0x0b); "NETSCAPE2.0".forEach { b(it.code) }
+            b(0x03); b(0x01); b(0); b(0); b(0)
         }
-        b(0); b(0x3b)
+        for (indices in frames) {
+            if (loop || delayCs > 0) { // Graphic Control Extension (delay)
+                b(0x21); b(0xf9); b(0x04); b(0x04); b(delayCs and 0xff); b(delayCs shr 8); b(0); b(0)
+            }
+            b(0x2c); b(0); b(0); b(0); b(0)
+            b(width); b(width shr 8); b(height); b(height shr 8); b(0)
+            b(8) // LZW min code size
+            val lzw = lzw(8, indices)
+            var i = 0
+            while (i < lzw.size) {
+                val n = minOf(255, lzw.size - i)
+                b(n); for (j in 0 until n) b(lzw[i + j]); i += n
+            }
+            b(0)
+        }
+        b(0x3b)
         return bo.toByteArray()
     }
 

@@ -119,11 +119,13 @@ class MainActivity : AppCompatActivity() {
                             "graph" -> {
                                 if (prefs.dexUser.isBlank()) return@withContext "Fyll i Dexcom först."
                                 val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
-                                val gif = GraphRender.render(readings, System.currentTimeMillis())
+                                // demo the text-over-graph overlay with a sample low warning
+                                val txt = prefs.tplLow.replace("{v}", "2.9").replace("{arr}", "↘").replace("{pred}", "2.0").trim()
+                                val gif = GraphRender.renderOverlay(readings, System.currentTimeMillis(), txt, GraphRender.TXT_RED)
                                 val url = bot.uploadCatbox(gif)
                                 if (!url.startsWith("http")) return@withContext "Uppladdning: ${url.take(60)}"
                                 bot.pushGif(JSONObject(prefs.chat), url, gif.size.toLong())
-                                "Graf (${gif.size} B) uppladdad & skickad"
+                                "Graf+text (${gif.size} B) uppladdad & skickad"
                             }
                             else -> {
                                 val url = prefs.gifUrl("happy")

@@ -10,12 +10,16 @@ object GraphRender {
     private const val Y_LO = 3.0
     private const val Y_HI = 13.0
 
-    // 0 bg,1 band,2 low,3 lowDim,4 inrange,5 inrangeDim,6 high,7 highDim,8 white,9 gray
+    // 0 bg,1 band,2 low,3 lowDim,4 inrange,5 inrangeDim,6 high,7 highDim,8 white,9 gray,10 amber
     private val PALETTE = listOf(
         intArrayOf(10, 10, 14), intArrayOf(14, 46, 22), intArrayOf(255, 60, 60), intArrayOf(120, 24, 24),
         intArrayOf(60, 220, 90), intArrayOf(24, 96, 40), intArrayOf(250, 200, 40), intArrayOf(120, 92, 16),
-        intArrayOf(245, 245, 245), intArrayOf(120, 120, 120),
+        intArrayOf(245, 245, 245), intArrayOf(120, 120, 120), intArrayOf(255, 149, 0),
     )
+    // text colours for the scrolling overlay
+    const val TXT_RED = 2
+    const val TXT_AMBER = 10
+    const val TXT_WHITE = 8
 
     private val FONT: Map<Char, Array<String>> = mapOf(
         '0' to arrayOf("111", "101", "101", "101", "111"),
@@ -64,10 +68,9 @@ object GraphRender {
         }
     }
 
-    /** Render the current 6h series to a 32x16 GIF. */
-    fun render(readings: List<Reading>, nowMs: Long): ByteArray {
+    /** Build the graph background (bars + band + newest emphasis). */
+    private fun graphFrame(readings: List<Reading>, nowMs: Long, withNumber: Boolean): ByteArray {
         val f = ByteArray(W * H) { 0 }
-        // target band 4-8
         val rHi = yRow(8.0); val rLo = yRow(4.0)
         for (r in minOf(rHi, rLo)..maxOf(rHi, rLo)) for (c in 0 until W) f[r * W + c] = 1
 
@@ -77,20 +80,38 @@ object GraphRender {
             val top = yRow(v); val z = zone(v)
             for (r in top until H) f[r * W + c] = (if (r == top) full(z) else dim(z)).toByte()
         }
-        // emphasise newest column
         val vLast = cols[W - 1]
         val stale = readings.isNotEmpty() && (nowMs - readings.last().ts) / 60000.0 > 16
         if (!vLast.isNaN()) {
             val top = yRow(vLast); val z = zone(vLast)
             for (r in top until H) f[r * W + (W - 1)] = (if (stale) 9 else full(z)).toByte()
         }
+        if (withNumber) {
+            val cur = if (readings.isEmpty()) Double.NaN else readings.last().mmol
+            val txt = if (cur.isNaN() || cur <= 0) "--" else String.format(java.util.Locale.US, "%.1f", cur)
+            val col = if (stale) 9 else if (cur.isNaN() || cur <= 0) 8 else when (zone(cur)) { "low" -> 2; "high" -> 6; else -> 8 }
+            drawText(f, 1, 1, txt, col)
+        }
+        return f
+    }
 
-        // current value number, top-left, coloured by zone (gray if stale)
-        val cur = if (readings.isEmpty()) Double.NaN else readings.last().mmol
-        val txt = if (cur.isNaN() || cur <= 0) "--" else String.format(java.util.Locale.US, "%.1f", cur)
-        val col = if (stale) 9 else if (cur.isNaN() || cur <= 0) 8 else when (zone(cur)) { "low" -> 2; "high" -> 6; else -> 8 }
-        drawText(f, 1, 1, txt, col)
+    /** Static graph with the value number (normal display). */
+    fun render(readings: List<Reading>, nowMs: Long): ByteArray =
+        Gif.encode(W, H, PALETTE, graphFrame(readings, nowMs, true))
 
-        return Gif.encode(W, H, PALETTE, f)
+    /** Warning text scrolling OVER the graph (transparent), as a looping animation. */
+    fun renderOverlay(readings: List<Reading>, nowMs: Long, text: String, colorIdx: Int): ByteArray {
+        val base = graphFrame(readings, nowMs, false) // graph without number; text carries the value
+        val t = Font.normalize(text)
+        val tw = Font.width(t)
+        val frames = ArrayList<ByteArray>()
+        var x = W
+        while (x >= -tw) {
+            val fr = base.copyOf()
+            Font.draw(fr, x, 5, t, colorIdx, W, H)
+            frames.add(fr)
+            x -= 2
+        }
+        return Gif.encodeAnimated(W, H, PALETTE, frames, 8)
     }
 }
