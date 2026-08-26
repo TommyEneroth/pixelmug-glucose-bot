@@ -116,7 +116,15 @@ class MainActivity : AppCompatActivity() {
                                 bot.pushText(JSONObject(prefs.chat), txt, "#ff2b2b")
                                 "Skickade text: \"$txt\""
                             }
-                            "graph" -> "Graf-läget är inte klart än."
+                            "graph" -> {
+                                if (prefs.dexUser.isBlank()) return@withContext "Fyll i Dexcom först."
+                                val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
+                                val gif = GraphRender.render(readings, System.currentTimeMillis())
+                                val url = bot.uploadCatbox(gif)
+                                if (!url.startsWith("http")) return@withContext "Uppladdning: ${url.take(60)}"
+                                bot.pushGif(JSONObject(prefs.chat), url, gif.size.toLong())
+                                "Graf (${gif.size} B) uppladdad & skickad"
+                            }
                             else -> {
                                 val url = prefs.gifUrl("happy")
                                 val size = bot.gifSize(url)

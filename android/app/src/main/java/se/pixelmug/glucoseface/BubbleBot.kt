@@ -1,6 +1,7 @@
 package se.pixelmug.glucoseface
 
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -84,6 +85,24 @@ class BubbleBot(private val token: String) {
             .put("slot", 1)
             .put("chat", chat)
         post("$base/bot/device/msg", body)
+    }
+
+    /** Upload GIF bytes to litterbox (temporary, no account) -> public URL that
+     * expires in 1h. Perfect for the dynamic graph (the mug fetches it in seconds). */
+    fun uploadCatbox(bytes: ByteArray): String {
+        val body = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("reqtype", "fileupload")
+            .addFormDataPart("time", "1h")
+            .addFormDataPart("fileToUpload", "graph.gif",
+                bytes.toRequestBody("image/gif".toMediaType()))
+            .build()
+        val req = Request.Builder()
+            .url("https://litterbox.catbox.moe/resources/internals/api.php")
+            .header("User-Agent", "GlukosMugg/1.0")
+            .post(body).build()
+        http.newCall(req).execute().use { r ->
+            return (r.body?.string() ?: "").trim()
+        }
     }
 
     /** Byte size of a GIF at `url` (talPlayGif wants the size). */

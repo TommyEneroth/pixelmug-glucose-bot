@@ -169,9 +169,15 @@ cd android
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-In the app: enter your **bot token** + **Dexcom** login, set the **GIF base URL**, pick a pack,
-tap **Koppla mugg** (open the Bubble app and send `/start` to the bot so it can capture the chat),
-then **Starta**. `Testa push` sends the happy face immediately.
+In the app: enter your **bot token** + **Dexcom** login, tap **Koppla mugg** (open the Bubble app
+and send `/start` so it can capture the chat), then **Starta**. `Testa push` fires one update.
+
+Three **modes**:
+- **Ansikte** — one of the static packs (fetched from the GIF base URL). Pick with a live preview.
+- **Text** — native scrolling warnings via the mug's own font service (no hosting). The six
+  warning texts are **editable** with `{v}` / `{arr}` / `{pred}` placeholders.
+- **Graf** — the phone renders the 32×16 VU-meter GIF on-device (`Gif.kt` + `GraphRender.kt`) and
+  uploads each frame to litterbox (temporary public URL) for the mug to fetch. No PC needed.
 
 > The mug fetches each face from a **public URL** (`GIF base URL` → `<base>/packs/<pack>/<expr>.gif`).
 > The six GIFs per pack are static, so host them once anywhere public — e.g. make this repo public

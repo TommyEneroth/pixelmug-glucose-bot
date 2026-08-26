@@ -54,8 +54,9 @@ class FaceService : Service() {
         if (chatStr.isBlank()) return "Muggen inte kopplad — tryck Koppla mugg."
         if (prefs.dexUser.isBlank()) return "Saknar Dexcom-inlogg."
 
-        val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(3)
-        val a = Alerts.assess(readings, System.currentTimeMillis())
+        val now = System.currentTimeMillis()
+        val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
+        val a = Alerts.assess(readings, now)
         val chat = JSONObject(chatStr)
         val bot = BubbleBot(token)
         val cur = if (a.current.isNaN()) "?" else String.format("%.1f", a.current)
@@ -68,7 +69,13 @@ class FaceService : Service() {
                 bot.pushText(chat, txt, color)
                 "${a.level}: \"$txt\" — text skickad"
             }
-            "graph" -> "Graf-läget kräver hosting (byggs härnäst)."
+            "graph" -> {
+                val gif = GraphRender.render(readings, now)
+                val url = bot.uploadCatbox(gif)
+                if (!url.startsWith("http")) return "Uppladdning misslyckades: ${url.take(80)}"
+                bot.pushGif(chat, url, gif.size.toLong())
+                "$cur mmol (${a.level}) — graf skickad"
+            }
             else -> {
                 val url = prefs.gifUrl(a.expr)
                 val size = bot.gifSize(url)
