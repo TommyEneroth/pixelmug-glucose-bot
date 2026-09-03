@@ -13,6 +13,9 @@ const PALETTE: [number, number, number][] = [
   [232, 229, 222], [255, 214, 60], [226, 182, 30], [20, 18, 10], [250, 250, 250],
   [220, 50, 50], [70, 150, 240], [150, 205, 120], [110, 166, 86], [92, 86, 98],
 ];
+// THEME=dark -> dark background (black mug); glowing disc, light pellets, no outline.
+const DARK = process.env.THEME === "dark";
+if (DARK) { PALETTE[0] = [10, 10, 14]; PALETTE[9] = [232, 232, 238]; }
 const CH: Record<string, number> = { B: 3, W: 4, R: 5, V: 6, P: 3, o: 9 };
 const blank = () => new Uint8Array(W * H).fill(0);
 
@@ -29,15 +32,16 @@ function pac(f: Uint8Array, green: boolean, mouth: number, dx = 0) {
       if (ang <= mouth) continue; // carve the mouth wedge
       f[y * W + x] = y >= CY + 3 ? shade : base;
     }
-  // 1px black outline (disc edge + mouth) so it reads on the light ceramic
-  const out: number[] = [];
-  for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) {
-      if (f[y * W + x] !== 0) continue;
-      const b = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && (f[yy * W + xx] === base || f[yy * W + xx] === shade);
-      if (b(x - 1, y) || b(x + 1, y) || b(x, y - 1) || b(x, y + 1)) out.push(y * W + x);
-    }
-  for (const i of out) f[i] = 3;
+  if (!DARK) { // outline only needed on the light ceramic
+    const out: number[] = [];
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (f[y * W + x] !== 0) continue;
+        const b = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && (f[yy * W + xx] === base || f[yy * W + xx] === shade)
+        if (b(x - 1, y) || b(x + 1, y) || b(x, y - 1) || b(x, y + 1)) out.push(y * W + x)
+      }
+    for (const i of out) f[i] = 3
+  }
 }
 function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
   for (let r = 0; r < s.length; r++) for (let c = 0; c < s[r].length; c++) {
@@ -106,11 +110,12 @@ function encode(fr: Uint8Array[], scale: number, delay = 250): Uint8Array {
 }
 
 const EXPRS: Expr[] = ["happy", "worried", "panic", "queasy", "sick", "sleep"];
-const dir = join(import.meta.dir, "..", "packs", "pacman");
+const name = `pacman${DARK ? "-dark" : ""}`;
+const dir = join(import.meta.dir, "..", "packs", name);
 mkdirSync(dir, { recursive: true });
 for (const e of EXPRS) {
   writeFileSync(join(dir, `${e}.gif`), encode(frames(e), 1));
-  writeFileSync(join(import.meta.dir, "..", "docs", `pacman_${e}.gif`), encode(frames(e), 10));
-  console.log("wrote", `packs/pacman/${e}.gif`);
+  writeFileSync(join(import.meta.dir, "..", "docs", `${name}_${e}.gif`), encode(frames(e), 10));
+  console.log("wrote", `packs/${name}/${e}.gif`);
 }
-console.log(`\nUse it:  FACE_PACK=packs/pacman bun run bot`);
+console.log(`\nUse it:  FACE_PACK=packs/${name} bun run bot`);

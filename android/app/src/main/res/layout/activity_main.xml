@@ -29,6 +29,12 @@
             <RadioButton android:id="@+id/modeGraph" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Graf" />
         </RadioGroup>
 
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Mugg-färg:" />
+        <RadioGroup android:id="@+id/mug" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <RadioButton android:id="@+id/mugBlack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Svart (S1 Pro)" android:checked="true" />
+            <RadioButton android:id="@+id/mugWhite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vit (P1)" />
+        </RadioGroup>
+
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Paket (Ansikte-läge):" />
         <RadioGroup android:id="@+id/pack" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <RadioButton android:id="@+id/packSnobben" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Snobben (Snoopy)" android:checked="true" />

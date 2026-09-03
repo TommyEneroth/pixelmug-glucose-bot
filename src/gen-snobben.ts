@@ -21,7 +21,11 @@ const PALETTE: [number, number, number][] = [
   [232, 229, 222], [248, 248, 248], [20, 20, 20], [205, 205, 210],
   [210, 50, 50], [150, 205, 120], [110, 166, 86], [70, 150, 240], [162, 166, 188],
 ];
-const CH: Record<string, number> = { B: 2, W: 1, R: 4, V: 7, E: 8 };
+// THEME=dark -> dark background (black mug): body glows, ear becomes lit grey, no outline.
+const DARK = process.env.THEME === "dark";
+if (DARK) PALETTE[0] = [10, 10, 14];
+// ear: black on the light mug (index 2), lit grey on the black mug (index 8)
+const CH: Record<string, number> = { B: 2, W: 1, R: 4, V: 7, E: DARK ? 8 : 2 };
 const blank = () => new Uint8Array(W * H).fill(0);
 
 function ellipse(f: Uint8Array, cx: number, cy: number, rx: number, ry: number, color: number, dx = 0) {
@@ -41,16 +45,17 @@ function head(green = false, dx = 0): Uint8Array {
   ellipse(f, 24, 10, 8.5, 4, base, dx); // snout (extended right so the nose gets a white ring)
   for (let y = 12; y < H; y++)
     for (let x = 0; x < W; x++) if (f[y * W + x] === base) f[y * W + x] = sh;
-  // 1px black outline around the body silhouette
-  const body = (i: number) => f[i] === base || f[i] === sh;
-  const out: number[] = [];
-  for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) {
-      if (f[y * W + x] !== 0) continue;
-      const nb = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && body(yy * W + xx);
-      if (nb(x - 1, y) || nb(x + 1, y) || nb(x, y - 1) || nb(x, y + 1)) out.push(y * W + x);
-    }
-  for (const i of out) f[i] = 2;
+  if (!DARK) { // 1px black outline around the body — only needed on the light mug
+    const body = (i: number) => f[i] === base || f[i] === sh;
+    const out: number[] = [];
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (f[y * W + x] !== 0) continue;
+        const nb = (xx: number, yy: number) => xx >= 0 && xx < W && yy >= 0 && yy < H && body(yy * W + xx);
+        if (nb(x - 1, y) || nb(x + 1, y) || nb(x, y - 1) || nb(x, y + 1)) out.push(y * W + x);
+      }
+    for (const i of out) f[i] = 2;
+  }
   return f;
 }
 function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
@@ -65,12 +70,12 @@ function stamp(f: Uint8Array, x: number, y: number, s: string[], dx = 0) {
 // long floppy BLACK ear at the back — Snoopy's signature: wide rounded top,
 // narrowing to a rounded tip, hanging well below the head.
 const EAR = [
-  ".BBBBB.", "BBBBBBB", "BBBBBBB", "BBBBBBB", ".BBBBBB",
-  ".BBBBBB", ".BBBBB.", "..BBBB.", "..BBBB.", "..BBB..", "..BBB..", "...BB..",
+  ".EEEEE.", "EEEEEEE", "EEEEEEE", "EEEEEEE", ".EEEEEE",
+  ".EEEEEE", ".EEEEE.", "..EEEE.", "..EEEE.", "..EEE..", "..EEE..", "...EE..",
 ];
 const EAR_UP = [
-  "...BBBBB", "..BBBBBBB", "BBBBBBBB.", "BBBBBBB..", "BBBBBB...",
-  ".BBBBB...", ".BBBB....", "..BBB....", "..BBB....",
+  "...EEEEE", "..EEEEEEE", "EEEEEEEE.", "EEEEEEE..", "EEEEEE...",
+  ".EEEEE...", ".EEEE....", "..EEE....", "..EEE....",
 ];
 
 const EYE = ["BB", "BB"];       // small oval
@@ -129,11 +134,12 @@ function encode(fr: Uint8Array[], scale: number, delay = 300): Uint8Array {
 }
 
 const EXPRS: Expr[] = ["happy", "worried", "panic", "queasy", "sick", "sleep"];
-const dir = join(import.meta.dir, "..", "packs", "snobben");
+const name = `snobben${DARK ? "-dark" : ""}`;
+const dir = join(import.meta.dir, "..", "packs", name);
 mkdirSync(dir, { recursive: true });
 for (const e of EXPRS) {
   writeFileSync(join(dir, `${e}.gif`), encode(frames(e), 1));
-  writeFileSync(join(import.meta.dir, "..", "docs", `snobben_${e}.gif`), encode(frames(e), 10));
-  console.log("wrote", `packs/snobben/${e}.gif`);
+  writeFileSync(join(import.meta.dir, "..", "docs", `${name}_${e}.gif`), encode(frames(e), 10));
+  console.log("wrote", `packs/${name}/${e}.gif`);
 }
-console.log(`\nUse it:  FACE_PACK=packs/snobben bun run bot`);
+console.log(`\nUse it:  FACE_PACK=packs/${name} bun run bot`);

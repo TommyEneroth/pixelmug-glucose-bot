@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         val pack = findViewById<RadioGroup>(R.id.pack)
         val preview = findViewById<ImageView>(R.id.preview)
         val mode = findViewById<RadioGroup>(R.id.mode)
+        val mug = findViewById<RadioGroup>(R.id.mug)
         val tplLow = findViewById<EditText>(R.id.tplLow)
         val tplHigh = findViewById<EditText>(R.id.tplHigh)
         val tplPredLow = findViewById<EditText>(R.id.tplPredLow)
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         val status = findViewById<TextView>(R.id.status)
 
         mode.check(when (prefs.mode) { "text" -> R.id.modeText; "graph" -> R.id.modeGraph; else -> R.id.modeFace })
+        mug.check(if (prefs.mugDark) R.id.mugBlack else R.id.mugWhite)
         tplLow.setText(prefs.tplLow); tplHigh.setText(prefs.tplHigh)
         tplPredLow.setText(prefs.tplPredLow); tplPredHigh.setText(prefs.tplPredHigh)
         tplOk.setText(prefs.tplOk); tplStale.setText(prefs.tplStale)
@@ -58,16 +60,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun updatePreview() {
+            val d = mug.checkedRadioButtonId == R.id.mugBlack
             preview.setImageResource(when (pack.checkedRadioButtonId) {
-                R.id.packMumin -> R.drawable.preview_mumin
-                R.id.packPacman -> R.drawable.preview_pacman
-                R.id.packEmoji -> R.drawable.preview_emoji
-                R.id.packNotman -> R.drawable.preview_notman
-                else -> R.drawable.preview_snobben
+                R.id.packMumin -> if (d) R.drawable.preview_mumin_dark else R.drawable.preview_mumin
+                R.id.packPacman -> if (d) R.drawable.preview_pacman_dark else R.drawable.preview_pacman
+                R.id.packEmoji -> if (d) R.drawable.preview_emoji_dark else R.drawable.preview_emoji
+                R.id.packNotman -> if (d) R.drawable.preview_notman_dark else R.drawable.preview_notman
+                else -> if (d) R.drawable.preview_snobben_dark else R.drawable.preview_snobben
             })
         }
         updatePreview()
         pack.setOnCheckedChangeListener { _, _ -> updatePreview() }
+        mug.setOnCheckedChangeListener { _, _ -> updatePreview() }
 
         fun save() {
             prefs.token = token.text.toString().trim()
@@ -81,6 +85,7 @@ class MainActivity : AppCompatActivity() {
             prefs.mode = when (mode.checkedRadioButtonId) {
                 R.id.modeText -> "text"; R.id.modeGraph -> "graph"; else -> "face"
             }
+            prefs.mugDark = mug.checkedRadioButtonId == R.id.mugBlack
             prefs.tplLow = tplLow.text.toString(); prefs.tplHigh = tplHigh.text.toString()
             prefs.tplPredLow = tplPredLow.text.toString(); prefs.tplPredHigh = tplPredHigh.text.toString()
             prefs.tplOk = tplOk.text.toString(); prefs.tplStale = tplStale.text.toString()

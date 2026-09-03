@@ -31,6 +31,11 @@ class Prefs(ctx: Context) {
         get() = sp.getString("pack", "snobben") ?: "snobben"
         set(v) = sp.edit().putString("pack", v).apply()
 
+    /** Black mug (S1 Pro) uses the dark pack variants; white mug (P1) the light ones. */
+    var mugDark: Boolean
+        get() = sp.getBoolean("mugDark", true)
+        set(v) = sp.edit().putBoolean("mugDark", v).apply()
+
     /** Display mode: "face" | "text" | "graph". */
     var mode: String
         get() = sp.getString("mode", "face") ?: "face"
@@ -58,5 +63,6 @@ class Prefs(ctx: Context) {
         get() = sp.getString("chat", "") ?: ""
         set(v) = sp.edit().putString("chat", v).apply()
 
-    fun gifUrl(expr: String): String = "$gifBase/packs/$pack/$expr.gif"
+    fun gifUrl(expr: String): String =
+        "$gifBase/packs/$pack${if (mugDark) "-dark" else ""}/$expr.gif"
 }

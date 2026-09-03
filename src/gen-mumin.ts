@@ -21,6 +21,9 @@ const PALETTE: [number, number, number][] = [
   [96, 162, 84], [58, 118, 56], [120, 122, 162], [176, 178, 210],
   [236, 206, 160], [226, 150, 162], [236, 200, 84], [96, 116, 176],
 ];
+// THEME=dark -> dark background (black mug); characters glow, no outline.
+const DARK = process.env.THEME === "dark";
+if (DARK) PALETTE[0] = [10, 10, 14];
 const blank = () => new Uint8Array(W * H).fill(0);
 
 function ellipse(f: Uint8Array, cx: number, cy: number, rx: number, ry: number, c: number) {
@@ -36,6 +39,7 @@ function px(f: Uint8Array, x: number, y: number, c: number) {
 }
 /** black outline around the whole silhouette (so it reads on light ceramic). */
 function outline(f: Uint8Array) {
+  if (DARK) return; // on the black mug the characters glow; no outline needed
   const add: number[] = [];
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     if (f[y * W + x] !== 0) continue;
@@ -150,12 +154,13 @@ function encode(frames: Frame[], scale: number, delay = 320): Uint8Array {
 }
 
 const EXPRS = ["happy", "worried", "panic", "queasy", "sick", "sleep"];
-const dir = join(import.meta.dir, "..", "packs", "mumin");
+const name = `mumin${DARK ? "-dark" : ""}`;
+const dir = join(import.meta.dir, "..", "packs", name);
 mkdirSync(dir, { recursive: true });
 for (const e of EXPRS) {
   const frames = [CHARS[e](0), CHARS[e](1)];
   writeFileSync(join(dir, `${e}.gif`), encode(frames, 1));
-  writeFileSync(join(import.meta.dir, "..", "docs", `mumin_${e}.gif`), encode(frames, 10));
-  console.log("wrote", `packs/mumin/${e}.gif`);
+  writeFileSync(join(import.meta.dir, "..", "docs", `${name}_${e}.gif`), encode(frames, 10));
+  console.log("wrote", `packs/${name}/${e}.gif`);
 }
-console.log(`\nUse it:  FACE_PACK=packs/mumin bun run bot`);
+console.log(`\nUse it:  FACE_PACK=packs/${name} bun run bot`);

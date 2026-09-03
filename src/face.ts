@@ -27,6 +27,8 @@ const PALETTE: [number, number, number][] = [
   [176, 222, 150], [150, 205, 120], [110, 166, 86],
   [246, 246, 246], [208, 46, 46], [138, 24, 24], [110, 178, 250], [236, 150, 140],
 ];
+// THEME=dark -> dark background (black mug); the head glows, outline blends away.
+if (process.env.THEME === "dark") PALETTE[0] = [12, 12, 16];
 type Skin = { hi: number; base: number; shade: number };
 const NORMAL: Skin = { hi: 2, base: 3, shade: 4 };
 const PALE: Skin = { hi: 5, base: 6, shade: 7 };
