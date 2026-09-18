@@ -16,6 +16,10 @@
     "gen-weather": "bun run src/gen-weather.ts",
     "gen-fire": "bun run src/gen-fire.ts",
     "gen-aqua": "bun run src/gen-aqua.ts",
+    "gen-lava": "bun run src/gen-lava.ts",
+    "gen-matrix": "bun run src/gen-matrix.ts",
+    "gen-space": "bun run src/gen-space.ts",
+    "gen-synth": "bun run src/gen-synth.ts",
     "test": "bun test"
   },
   "dependencies": {

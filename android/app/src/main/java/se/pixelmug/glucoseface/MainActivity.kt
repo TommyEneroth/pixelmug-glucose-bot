@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity() {
             "weather" -> pack.check(R.id.packWeather)
             "fire" -> pack.check(R.id.packFire)
             "aqua" -> pack.check(R.id.packAqua)
+            "lava" -> pack.check(R.id.packLava)
+            "matrix" -> pack.check(R.id.packMatrix)
+            "space" -> pack.check(R.id.packSpace)
+            "synth" -> pack.check(R.id.packSynth)
             else -> pack.check(R.id.packSnobben)
         }
 
@@ -72,6 +76,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.packWeather -> if (d) R.drawable.preview_weather_dark else R.drawable.preview_weather
                 R.id.packFire -> if (d) R.drawable.preview_fire_dark else R.drawable.preview_fire
                 R.id.packAqua -> if (d) R.drawable.preview_aqua_dark else R.drawable.preview_aqua
+                R.id.packLava -> if (d) R.drawable.preview_lava_dark else R.drawable.preview_lava
+                R.id.packMatrix -> if (d) R.drawable.preview_matrix_dark else R.drawable.preview_matrix
+                R.id.packSpace -> if (d) R.drawable.preview_space_dark else R.drawable.preview_space
+                R.id.packSynth -> if (d) R.drawable.preview_synth_dark else R.drawable.preview_synth
                 else -> if (d) R.drawable.preview_snobben_dark else R.drawable.preview_snobben
             })
         }
@@ -88,7 +96,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.packMumin -> "mumin"; R.id.packPacman -> "pacman"
                 R.id.packEmoji -> "emoji"; R.id.packNotman -> "notman"
                 R.id.packWeather -> "weather"; R.id.packFire -> "fire"
-                R.id.packAqua -> "aqua"; else -> "snobben"
+                R.id.packAqua -> "aqua"
+                R.id.packLava -> "lava"; R.id.packMatrix -> "matrix"
+                R.id.packSpace -> "space"; R.id.packSynth -> "synth"; else -> "snobben"
             }
             prefs.mode = when (mode.checkedRadioButtonId) {
                 R.id.modeText -> "text"; R.id.modeGraph -> "graph"; else -> "face"

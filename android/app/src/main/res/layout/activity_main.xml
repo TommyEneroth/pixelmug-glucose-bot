@@ -45,6 +45,10 @@
             <RadioButton android:id="@+id/packWeather" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Väder (himmel = glukos)" />
             <RadioButton android:id="@+id/packFire" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lägereld (låga = glukos)" />
             <RadioButton android:id="@+id/packAqua" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Akvarium (fisk = glukos)" />
+            <RadioButton android:id="@+id/packLava" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lavalampa (klump = glukos)" />
+            <RadioButton android:id="@+id/packMatrix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Matrix (kodregn = glukos)" />
+            <RadioButton android:id="@+id/packSpace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rymd (stjärnor = glukos)" />
+            <RadioButton android:id="@+id/packSynth" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Synthwave (sol = glukos)" />
         </RadioGroup>
 
         <ImageView
