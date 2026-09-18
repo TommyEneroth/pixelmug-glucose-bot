@@ -14,6 +14,7 @@
     "gen-pacman": "bun run src/gen-pacman.ts",
     "gen-mumin": "bun run src/gen-mumin.ts",
     "gen-weather": "bun run src/gen-weather.ts",
+    "gen-fire": "bun run src/gen-fire.ts",
     "test": "bun test"
   },
   "dependencies": {

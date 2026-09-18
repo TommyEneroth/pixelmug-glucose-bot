@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             "emoji" -> pack.check(R.id.packEmoji)
             "notman" -> pack.check(R.id.packNotman)
             "weather" -> pack.check(R.id.packWeather)
+            "fire" -> pack.check(R.id.packFire)
             else -> pack.check(R.id.packSnobben)
         }
 
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.packEmoji -> if (d) R.drawable.preview_emoji_dark else R.drawable.preview_emoji
                 R.id.packNotman -> if (d) R.drawable.preview_notman_dark else R.drawable.preview_notman
                 R.id.packWeather -> if (d) R.drawable.preview_weather_dark else R.drawable.preview_weather
+                R.id.packFire -> if (d) R.drawable.preview_fire_dark else R.drawable.preview_fire
                 else -> if (d) R.drawable.preview_snobben_dark else R.drawable.preview_snobben
             })
         }
@@ -83,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             prefs.pack = when (pack.checkedRadioButtonId) {
                 R.id.packMumin -> "mumin"; R.id.packPacman -> "pacman"
                 R.id.packEmoji -> "emoji"; R.id.packNotman -> "notman"
-                R.id.packWeather -> "weather"; else -> "snobben"
+                R.id.packWeather -> "weather"; R.id.packFire -> "fire"; else -> "snobben"
             }
             prefs.mode = when (mode.checkedRadioButtonId) {
                 R.id.modeText -> "text"; R.id.modeGraph -> "graph"; else -> "face"
