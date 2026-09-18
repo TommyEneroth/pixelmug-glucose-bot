@@ -73,6 +73,7 @@
         <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Koppla mugg (öppna Bubble, skicka /start)" />
         <Button android:id="@+id/btnTest" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Testa push (happy)" />
         <Button android:id="@+id/btnHyper" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🚀 Hyperrymd (Falcon)" />
+        <Button android:id="@+id/btnNotes" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🎵 Dansande noter" />
         <Button android:id="@+id/btnStart" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Starta (var 5:e min)" />
         <Button android:id="@+id/btnStop" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Stoppa" />
 

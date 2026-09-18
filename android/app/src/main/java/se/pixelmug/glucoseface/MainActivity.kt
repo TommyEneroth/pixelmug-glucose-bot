@@ -164,23 +164,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.btnHyper).setOnClickListener {
-            save(); status.text = "Skickar hyperrymd…"
+        // Push a one-off showpiece GIF from packs/extras/ straight to the mug.
+        fun pushExtra(file: String, label: String) {
+            save(); status.text = "Skickar $label…"
             scope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
                         if (prefs.chat.isBlank()) return@withContext "Koppla muggen först."
                         val bot = BubbleBot(prefs.token)
-                        val url = "${prefs.gifBase}/packs/extras/hyperspace.gif"
+                        val url = "${prefs.gifBase}/packs/extras/$file"
                         val size = bot.gifSize(url)
                         if (size <= 0L) return@withContext "GIF saknas: $url"
                         bot.pushGif(JSONObject(prefs.chat), url, size)
-                        "🚀 Hyperrymd skickad ($size B)"
+                        "$label skickad ($size B)"
                     } catch (e: Exception) { "Fel: ${e.message}" }
                 }
                 status.text = res
             }
         }
+        findViewById<Button>(R.id.btnHyper).setOnClickListener { pushExtra("hyperspace.gif", "🚀 Hyperrymd") }
+        findViewById<Button>(R.id.btnNotes).setOnClickListener { pushExtra("notes.gif", "🎵 Dansande noter") }
 
         findViewById<Button>(R.id.btnStart).setOnClickListener {
             save()
