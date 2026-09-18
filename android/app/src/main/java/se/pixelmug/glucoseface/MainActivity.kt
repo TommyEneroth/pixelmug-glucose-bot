@@ -164,6 +164,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.btnHyper).setOnClickListener {
+            save(); status.text = "Skickar hyperrymd…"
+            scope.launch {
+                val res = withContext(Dispatchers.IO) {
+                    try {
+                        if (prefs.chat.isBlank()) return@withContext "Koppla muggen först."
+                        val bot = BubbleBot(prefs.token)
+                        val url = "${prefs.gifBase}/packs/extras/hyperspace.gif"
+                        val size = bot.gifSize(url)
+                        if (size <= 0L) return@withContext "GIF saknas: $url"
+                        bot.pushGif(JSONObject(prefs.chat), url, size)
+                        "🚀 Hyperrymd skickad ($size B)"
+                    } catch (e: Exception) { "Fel: ${e.message}" }
+                }
+                status.text = res
+            }
+        }
+
         findViewById<Button>(R.id.btnStart).setOnClickListener {
             save()
             val i = Intent(this, FaceService::class.java)
