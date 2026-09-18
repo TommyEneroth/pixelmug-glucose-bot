@@ -108,10 +108,15 @@ Good to know:
 
 ### Included packs
 
-Three ready-made packs ship in `packs/`. Point `FACE_PACK` at one (flag or `.env`):
+Twelve ready-made packs ship in `packs/` — seven ambient scenes and five characters, each in a light
+(P1) and a dark (S1 Pro) variant. All read the same six glucose states:
+
+<p align="center"><img src="docs/all_packs_overview.png" width="760" alt="All twelve PixelMug glucose packs across the six states"></p>
+
+Point `FACE_PACK` at one (flag or `.env`):
 
 ```bash
-FACE_PACK=packs/emoji bun run bot     # or packs/pacman, packs/snobben
+FACE_PACK=packs/weather bun run bot   # or fire, aqua, lava, matrix, space, synth, emoji, pacman, snobben, mumin
 ```
 
 **Emoji** 🙂 — `packs/emoji` — the colour reinforces the level (yellow → green when high).
