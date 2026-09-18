@@ -44,6 +44,7 @@
             <RadioButton android:id="@+id/packNotman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="NOT-man (Anthrax)" />
             <RadioButton android:id="@+id/packWeather" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Väder (himmel = glukos)" />
             <RadioButton android:id="@+id/packFire" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lägereld (låga = glukos)" />
+            <RadioButton android:id="@+id/packAqua" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Akvarium (fisk = glukos)" />
         </RadioGroup>
 
         <ImageView

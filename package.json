@@ -15,6 +15,7 @@
     "gen-mumin": "bun run src/gen-mumin.ts",
     "gen-weather": "bun run src/gen-weather.ts",
     "gen-fire": "bun run src/gen-fire.ts",
+    "gen-aqua": "bun run src/gen-aqua.ts",
     "test": "bun test"
   },
   "dependencies": {
