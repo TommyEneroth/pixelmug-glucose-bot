@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Glukos-mugg</string>
+    <string name="disclaimer">Inte en medicinteknisk produkt. Muggen är bara något att kasta ett öga på. Lita aldrig på den i stället för sensorns egna larm, och fatta inga behandlingsbeslut utifrån den.</string>
+
+    <string name="hint_token">Bot-token</string>
+    <string name="hint_dex_user">Dexcom-användarnamn</string>
+    <string name="hint_dex_pass">Dexcom-lösenord</string>
+    <string name="hint_gif_base">GIF bas-URL</string>
+    <string name="label_region">Dexcom Share-server:</string>
+    <string name="region_ous">Utanför USA</string>
+    <string name="region_us">USA</string>
+    <string name="region_jp">Japan</string>
+
+    <string name="label_unit">Enhet:</string>
+    <string name="label_limits">Gränser (i enheten ovan):</string>
+    <string name="label_urgent_low">Akut lågt, vid eller under</string>
+    <string name="label_range_low">Målområde, lägsta</string>
+    <string name="label_range_high">Målområde, högsta</string>
+    <string name="label_urgent_high">Akut högt, vid eller över</string>
+    <string name="label_pred_min">Prognosfönster, minuter</string>
+
+    <string name="label_mode">Läge:</string>
+    <string name="mode_face">Ansikte</string>
+    <string name="mode_text">Text</string>
+    <string name="mode_graph">Graf</string>
+    <string name="label_mug">Mugg-färg:</string>
+    <string name="mug_black">Svart (S1 Pro)</string>
+    <string name="mug_white">Vit (P1)</string>
+    <string name="label_pack">Paket (Ansikte-läge):</string>
+    <string name="pack_snobben">Snobben (Snoopy)</string>
+    <string name="pack_mumin">Mumin</string>
+    <string name="pack_emoji">Emoji</string>
+    <string name="pack_notman">NOT-man (Anthrax)</string>
+    <string name="pack_weather">Väder (himmel = glukos)</string>
+    <string name="pack_fire">Lägereld (låga = glukos)</string>
+    <string name="pack_aqua">Akvarium (fisk = glukos)</string>
+    <string name="pack_lava">Lavalampa (klump = glukos)</string>
+    <string name="pack_matrix">Matrix (kodregn = glukos)</string>
+    <string name="pack_space">Rymd (stjärnor = glukos)</string>
+    <string name="pack_synth">Synthwave (sol = glukos)</string>
+    <string name="preview_desc">Förhandsvisning av paketet</string>
+
+    <string name="label_templates">Rulltexter (Text- och Graf-läge). Platshållare: {v} värde, {arr} trendpil, {pred} prognos, {min} prognosminuter.</string>
+    <string name="label_tpl_low">Akut lågt</string>
+    <string name="label_tpl_high">Akut högt</string>
+    <string name="label_tpl_pred_low">Förvarning lågt</string>
+    <string name="label_tpl_pred_high">Förvarning högt</string>
+    <string name="label_tpl_ok">Normalt (lämna tomt för ingen text)</string>
+    <string name="label_tpl_stale">Gammalt värde</string>
+    <string name="tpl_low_default">LÅGT {v} {arr}</string>
+    <string name="tpl_high_default">HÖGT {v} {arr}</string>
+    <string name="tpl_pred_low_default">SNART LÅGT {v} {arr} ~{pred} OM {min} MIN</string>
+    <string name="tpl_pred_high_default">SNART HÖGT {v} {arr} ~{pred} OM {min} MIN</string>
+    <string name="tpl_stale_default">GAMMALT {v}?</string>
+
+    <string name="btn_capture">Koppla mugg (öppna Bubble, skicka /start)</string>
+    <string name="btn_test">Testa push</string>
+    <string name="btn_hyper">🚀 Hyperrymd (Falcon)</string>
+    <string name="btn_notes">🎵 Dansande noter</string>
+    <string name="btn_start">Starta (var 5:e min)</string>
+    <string name="btn_stop">Stoppa</string>
+
+    <string name="status_ready">Redo.</string>
+    <string name="st_capture_wait">Öppna Bubble-appen och skicka /start till boten…</string>
+    <string name="st_capture_none">Ingen chatt fångad. Skicka /start i Bubble och försök igen.</string>
+    <string name="st_capture_ok">Mugg kopplad ✔ (chatt sparad)</string>
+    <string name="st_error">Fel: %1$s</string>
+    <string name="st_sending_test">Skickar test…</string>
+    <string name="st_connect_first">Koppla muggen först.</string>
+    <string name="st_empty_template">Tom mall.</string>
+    <string name="st_sent_text">Skickade text: \"%1$s\"</string>
+    <string name="st_fill_dexcom">Fyll i Dexcom-inloggningen först.</string>
+    <string name="st_upload_failed">Uppladdningen misslyckades: %1$s</string>
+    <string name="st_sent_graph">Graf + text (%1$d B) uppladdad och skickad</string>
+    <string name="st_gif_missing">GIF saknas: %1$s</string>
+    <string name="st_sent_happy">Skickade happy (%1$d B)</string>
+    <string name="st_sending">Skickar %1$s…</string>
+    <string name="st_sent">%1$s skickad (%2$d B)</string>
+    <string name="st_running">Igång, uppdaterar var 5:e minut.</string>
+    <string name="st_stopped">Stoppad.</string>
+    <string name="st_bad_limits">Kontrollera gränserna: akut lågt &lt; målområdets lägsta &lt; målområdets högsta &lt; akut högt, och ett prognosfönster på 5–60 minuter.</string>
+
+    <string name="svc_starting">Startar…</string>
+    <string name="svc_no_token">Saknar bot-token.</string>
+    <string name="svc_not_connected">Muggen är inte kopplad. Tryck Koppla mugg.</string>
+    <string name="svc_no_dexcom">Saknar Dexcom-inloggning.</string>
+    <string name="svc_empty_skip">%1$s %2$s (%3$s): tom mall, hoppar över.</string>
+    <string name="svc_text_sent">%1$s: \"%2$s\" skickad som text</string>
+    <string name="svc_graph_sent">%1$s %2$s (%3$s): graf skickad</string>
+    <string name="svc_face_sent">%1$s %2$s (%3$s) → %4$s</string>
+</resources>

@@ -2,13 +2,14 @@ package se.pixelmug.glucoseface
 
 /**
  * Render 6h of glucose as a 32x16 VU-meter GIF (dark background, coloured bars,
- * current value top-left). Mirrors the TS graph version.
+ * current value top-left). Values are mg/dL; colours and the shaded band follow
+ * the user's target range, the number follows their unit.
  */
 object GraphRender {
     private const val W = 32
     private const val H = 16
-    private const val Y_LO = 3.0
-    private const val Y_HI = 13.0
+    private const val Y_LO = 3.0 * Units.MGDL_PER_MMOL  // 54 mg/dL
+    private const val Y_HI = 13.0 * Units.MGDL_PER_MMOL // 234 mg/dL
 
     // 0 bg,1 band,2 low,3 lowDim,4 inrange,5 inrangeDim,6 high,7 highDim,8 white,9 gray,10 amber
     private val PALETTE = listOf(
@@ -36,7 +37,8 @@ object GraphRender {
         '-' to arrayOf("000", "000", "111", "000", "000"),
     )
 
-    private fun zone(v: Double) = if (v <= 4.5) "low" else if (v <= 12.5) "inrange" else "high"
+    private fun zone(v: Double, lim: Limits) =
+        if (v < lim.rangeLow) "low" else if (v <= lim.rangeHigh) "inrange" else "high"
     private fun full(z: String) = if (z == "low") 2 else if (z == "high") 6 else 4
     private fun dim(z: String) = if (z == "low") 3 else if (z == "high") 7 else 5
     private fun yRow(v: Double): Int {
@@ -69,39 +71,39 @@ object GraphRender {
     }
 
     /** Build the graph background (bars + band + newest emphasis). */
-    private fun graphFrame(readings: List<Reading>, nowMs: Long, withNumber: Boolean): ByteArray {
+    private fun graphFrame(readings: List<Reading>, nowMs: Long, lim: Limits, unit: String?): ByteArray {
         val f = ByteArray(W * H) { 0 }
-        val rHi = yRow(8.0); val rLo = yRow(4.0)
+        val rHi = yRow(lim.rangeHigh); val rLo = yRow(lim.rangeLow)
         for (r in minOf(rHi, rLo)..maxOf(rHi, rLo)) for (c in 0 until W) f[r * W + c] = 1
 
-        val cols = binToCols(readings.map { it.mmol })
+        val cols = binToCols(readings.map { it.mgdl })
         for (c in 0 until W) {
             val v = cols[c]; if (v.isNaN()) continue
-            val top = yRow(v); val z = zone(v)
+            val top = yRow(v); val z = zone(v, lim)
             for (r in top until H) f[r * W + c] = (if (r == top) full(z) else dim(z)).toByte()
         }
         val vLast = cols[W - 1]
         val stale = readings.isNotEmpty() && (nowMs - readings.last().ts) / 60000.0 > 16
         if (!vLast.isNaN()) {
-            val top = yRow(vLast); val z = zone(vLast)
+            val top = yRow(vLast); val z = zone(vLast, lim)
             for (r in top until H) f[r * W + (W - 1)] = (if (stale) 9 else full(z)).toByte()
         }
-        if (withNumber) {
-            val cur = if (readings.isEmpty()) Double.NaN else readings.last().mmol
-            val txt = if (cur.isNaN() || cur <= 0) "--" else String.format(java.util.Locale.US, "%.1f", cur)
-            val col = if (stale) 9 else if (cur.isNaN() || cur <= 0) 8 else when (zone(cur)) { "low" -> 2; "high" -> 6; else -> 8 }
+        if (unit != null) {
+            val cur = if (readings.isEmpty()) Double.NaN else readings.last().mgdl
+            val txt = if (cur.isNaN() || cur <= 0) "--" else Units.format(cur, unit)
+            val col = if (stale) 9 else if (cur.isNaN() || cur <= 0) 8 else when (zone(cur, lim)) { "low" -> 2; "high" -> 6; else -> 8 }
             drawText(f, 1, 1, txt, col)
         }
         return f
     }
 
     /** Static graph with the value number (normal display). */
-    fun render(readings: List<Reading>, nowMs: Long): ByteArray =
-        Gif.encode(W, H, PALETTE, graphFrame(readings, nowMs, true))
+    fun render(readings: List<Reading>, nowMs: Long, lim: Limits, unit: String): ByteArray =
+        Gif.encode(W, H, PALETTE, graphFrame(readings, nowMs, lim, unit))
 
     /** Warning text scrolling OVER the graph (transparent), as a looping animation. */
-    fun renderOverlay(readings: List<Reading>, nowMs: Long, text: String, colorIdx: Int): ByteArray {
-        val base = graphFrame(readings, nowMs, false) // graph without number; text carries the value
+    fun renderOverlay(readings: List<Reading>, nowMs: Long, text: String, colorIdx: Int, lim: Limits): ByteArray {
+        val base = graphFrame(readings, nowMs, lim, null) // graph without number; text carries the value
         val t = Font.normalize(text)
         val tw = Font.width(t)
         val frames = ArrayList<ByteArray>()

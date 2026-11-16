@@ -1,5 +1,8 @@
 package se.pixelmug.glucoseface
 
+import java.text.Normalizer
+import java.util.Locale
+
 /** 5x7 pixel font (Å/Ä/Ö are 9-row; drawn bottom-aligned so marks rise above). */
 object Font {
     const val H = 7
@@ -55,8 +58,28 @@ object Font {
         '→' to arrayOf("00000", "00100", "00010", "11111", "00010", "00100", "00000"),
     )
 
-    /** Uppercase (keeps Å Ä Ö); fold en-dash so the font can render it. */
-    fun normalize(s: String): String = s.uppercase().replace('–', '-')
+    /**
+     * Uppercase for the pixel font. Uses Locale.ROOT, because the phone's locale would
+     * turn "i" into a dotted "İ" on Turkish phones. Dashes fold to '-', and letters the
+     * font lacks become their base letter (Ü→U, É→E, Ñ→N, Æ→AE, Ø→O) instead of a gap.
+     */
+    fun normalize(s: String): String {
+        val out = StringBuilder()
+        for (ch in s.uppercase(Locale.ROOT).replace('–', '-').replace('—', '-')) {
+            when {
+                G.containsKey(ch) -> out.append(ch)
+                ch == 'Æ' -> out.append("AE")
+                ch == 'Œ' -> out.append("OE")
+                ch == 'Ø' -> out.append('O')
+                else -> {
+                    val base = Normalizer.normalize(ch.toString(), Normalizer.Form.NFD)
+                        .replace(Regex("\\p{Mn}+"), "")
+                    out.append(if (base.length == 1 && G.containsKey(base[0])) base else ch.toString())
+                }
+            }
+        }
+        return out.toString()
+    }
 
     fun width(s: String): Int {
         var w = 0

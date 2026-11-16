@@ -29,6 +29,13 @@ class MainActivity : AppCompatActivity() {
         val dexUser = findViewById<EditText>(R.id.dexUser)
         val dexPass = findViewById<EditText>(R.id.dexPass)
         val gifBase = findViewById<EditText>(R.id.gifBase)
+        val region = findViewById<RadioGroup>(R.id.region)
+        val unit = findViewById<RadioGroup>(R.id.unit)
+        val limUrgentLow = findViewById<EditText>(R.id.limUrgentLow)
+        val limRangeLow = findViewById<EditText>(R.id.limRangeLow)
+        val limRangeHigh = findViewById<EditText>(R.id.limRangeHigh)
+        val limUrgentHigh = findViewById<EditText>(R.id.limUrgentHigh)
+        val limPredMin = findViewById<EditText>(R.id.limPredMin)
         val pack = findViewById<RadioGroup>(R.id.pack)
         val preview = findViewById<ImageView>(R.id.preview)
         val mode = findViewById<RadioGroup>(R.id.mode)
@@ -43,6 +50,8 @@ class MainActivity : AppCompatActivity() {
 
         mode.check(when (prefs.mode) { "text" -> R.id.modeText; "graph" -> R.id.modeGraph; else -> R.id.modeFace })
         mug.check(if (prefs.mugDark) R.id.mugBlack else R.id.mugWhite)
+        region.check(when (prefs.region) { "us" -> R.id.regionUs; "jp" -> R.id.regionJp; else -> R.id.regionOus })
+        unit.check(if (prefs.unit == Units.MGDL) R.id.unitMgdl else R.id.unitMmol)
         tplLow.setText(prefs.tplLow); tplHigh.setText(prefs.tplHigh)
         tplPredLow.setText(prefs.tplPredLow); tplPredHigh.setText(prefs.tplPredHigh)
         tplOk.setText(prefs.tplOk); tplStale.setText(prefs.tplStale)
@@ -66,6 +75,26 @@ class MainActivity : AppCompatActivity() {
             else -> pack.check(R.id.packSnobben)
         }
 
+        // Limits are stored in mg/dL and shown in whichever unit is selected.
+        val glucoseFields = listOf(limUrgentLow, limRangeLow, limRangeHigh, limUrgentHigh)
+        fun selectedUnit() = if (unit.checkedRadioButtonId == R.id.unitMgdl) Units.MGDL else Units.MMOL
+        fun showLimits(l: Limits, u: String) {
+            listOf(l.urgentLow, l.rangeLow, l.rangeHigh, l.urgentHigh)
+                .forEachIndexed { i, v -> glucoseFields[i].setText(Units.format(v, u)) }
+            limPredMin.setText(l.predMin.toString())
+        }
+        var shownUnit = selectedUnit()
+        showLimits(prefs.limits, shownUnit)
+        // Switching unit converts what's in the fields, including unsaved edits.
+        unit.setOnCheckedChangeListener { _, _ ->
+            val next = selectedUnit()
+            for (f in glucoseFields) {
+                val mgdl = Units.parse(f.text.toString(), shownUnit) ?: continue
+                f.setText(Units.format(mgdl, next))
+            }
+            shownUnit = next
+        }
+
         fun updatePreview() {
             val d = mug.checkedRadioButtonId == R.id.mugBlack
             preview.setImageResource(when (pack.checkedRadioButtonId) {
@@ -87,11 +116,15 @@ class MainActivity : AppCompatActivity() {
         pack.setOnCheckedChangeListener { _, _ -> updatePreview() }
         mug.setOnCheckedChangeListener { _, _ -> updatePreview() }
 
-        fun save() {
+        /** Saves everything; returns an error message if the limits don't add up (those are then not saved). */
+        fun save(): String? {
             prefs.token = token.text.toString().trim()
             prefs.dexUser = dexUser.text.toString().trim()
             prefs.dexPass = dexPass.text.toString()
             prefs.gifBase = gifBase.text.toString().trim()
+            prefs.region = when (region.checkedRadioButtonId) {
+                R.id.regionUs -> "us"; R.id.regionJp -> "jp"; else -> "eu"
+            }
             prefs.pack = when (pack.checkedRadioButtonId) {
                 R.id.packMumin -> "mumin"; R.id.packPacman -> "pacman"
                 R.id.packEmoji -> "emoji"; R.id.packNotman -> "notman"
@@ -107,58 +140,74 @@ class MainActivity : AppCompatActivity() {
             prefs.tplLow = tplLow.text.toString(); prefs.tplHigh = tplHigh.text.toString()
             prefs.tplPredLow = tplPredLow.text.toString(); prefs.tplPredHigh = tplPredHigh.text.toString()
             prefs.tplOk = tplOk.text.toString(); prefs.tplStale = tplStale.text.toString()
+
+            val u = selectedUnit()
+            prefs.unit = u
+            fun mgdl(f: EditText) = Units.parse(f.text.toString(), u) ?: Double.NaN
+            val lim = Limits(
+                urgentLow = mgdl(limUrgentLow), urgentHigh = mgdl(limUrgentHigh),
+                rangeLow = mgdl(limRangeLow), rangeHigh = mgdl(limRangeHigh),
+                predMin = limPredMin.text.toString().trim().toIntOrNull() ?: -1,
+            )
+            if (!lim.isValid()) return getString(R.string.st_bad_limits)
+            prefs.limits = lim
+            return null
         }
 
         findViewById<Button>(R.id.btnCapture).setOnClickListener {
-            save(); status.text = "Öppna Bubble-appen och skicka /start till boten…"
+            save()?.let { status.text = it; return@setOnClickListener }
+            status.text = getString(R.string.st_capture_wait)
             scope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
                         val bot = BubbleBot(prefs.token)
                         bot.saveSlots()
-                        val chat = bot.captureChat(25000) ?: return@withContext "Ingen chatt fångad — skicka /start i Bubble och försök igen."
+                        val chat = bot.captureChat(25000) ?: return@withContext getString(R.string.st_capture_none)
                         prefs.chat = chat.toString()
-                        "Mugg kopplad ✔  (chatt sparad)"
-                    } catch (e: Exception) { "Fel: ${e.message}" }
+                        getString(R.string.st_capture_ok)
+                    } catch (e: Exception) { getString(R.string.st_error, e.message) }
                 }
                 status.text = res
             }
         }
 
         findViewById<Button>(R.id.btnTest).setOnClickListener {
-            save(); status.text = "Skickar test…"
+            save()?.let { status.text = it; return@setOnClickListener }
+            status.text = getString(R.string.st_sending_test)
             scope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
-                        if (prefs.chat.isBlank()) return@withContext "Koppla muggen först."
+                        if (prefs.chat.isBlank()) return@withContext getString(R.string.st_connect_first)
                         val bot = BubbleBot(prefs.token)
+                        val lim = prefs.limits
+                        // A sample urgent low (2.9 heading for 2.0) in the user's own unit.
+                        val sample = Templates.fill(prefs.tplLow, 2.9 * Units.MGDL_PER_MMOL,
+                            2.0 * Units.MGDL_PER_MMOL, "↘", prefs.unit, lim.predMin)
                         when (prefs.mode) {
                             "text" -> {
-                                val txt = prefs.tplLow.replace("{v}", "2.9").replace("{arr}", "↘").replace("{pred}", "2.0").trim()
-                                if (txt.isBlank()) return@withContext "Tom mall."
-                                bot.pushText(JSONObject(prefs.chat), txt, "#ff2b2b")
-                                "Skickade text: \"$txt\""
+                                if (sample.isBlank()) return@withContext getString(R.string.st_empty_template)
+                                bot.pushText(JSONObject(prefs.chat), sample, "#ff2b2b")
+                                getString(R.string.st_sent_text, sample)
                             }
                             "graph" -> {
-                                if (prefs.dexUser.isBlank()) return@withContext "Fyll i Dexcom först."
+                                if (prefs.dexUser.isBlank()) return@withContext getString(R.string.st_fill_dexcom)
                                 val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
-                                // demo the text-over-graph overlay with a sample low warning
-                                val txt = prefs.tplLow.replace("{v}", "2.9").replace("{arr}", "↘").replace("{pred}", "2.0").trim()
-                                val gif = GraphRender.renderOverlay(readings, System.currentTimeMillis(), txt, GraphRender.TXT_RED)
+                                val gif = GraphRender.renderOverlay(readings, System.currentTimeMillis(),
+                                    sample, GraphRender.TXT_RED, lim)
                                 val url = bot.uploadCatbox(gif)
-                                if (!url.startsWith("http")) return@withContext "Uppladdning: ${url.take(60)}"
+                                if (!url.startsWith("http")) return@withContext getString(R.string.st_upload_failed, url.take(60))
                                 bot.pushGif(JSONObject(prefs.chat), url, gif.size.toLong())
-                                "Graf+text (${gif.size} B) uppladdad & skickad"
+                                getString(R.string.st_sent_graph, gif.size)
                             }
                             else -> {
                                 val url = prefs.gifUrl("happy")
                                 val size = bot.gifSize(url)
-                                if (size <= 0L) return@withContext "GIF saknas: $url"
+                                if (size <= 0L) return@withContext getString(R.string.st_gif_missing, url)
                                 bot.pushGif(JSONObject(prefs.chat), url, size)
-                                "Skickade happy ($size B)"
+                                getString(R.string.st_sent_happy, size)
                             }
                         }
-                    } catch (e: Exception) { "Fel: ${e.message}" }
+                    } catch (e: Exception) { getString(R.string.st_error, e.message) }
                 }
                 status.text = res
             }
@@ -166,35 +215,36 @@ class MainActivity : AppCompatActivity() {
 
         // Push a one-off showpiece GIF from packs/extras/ straight to the mug.
         fun pushExtra(file: String, label: String) {
-            save(); status.text = "Skickar $label…"
+            save()?.let { status.text = it; return }
+            status.text = getString(R.string.st_sending, label)
             scope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
-                        if (prefs.chat.isBlank()) return@withContext "Koppla muggen först."
+                        if (prefs.chat.isBlank()) return@withContext getString(R.string.st_connect_first)
                         val bot = BubbleBot(prefs.token)
                         val url = "${prefs.gifBase}/packs/extras/$file"
                         val size = bot.gifSize(url)
-                        if (size <= 0L) return@withContext "GIF saknas: $url"
+                        if (size <= 0L) return@withContext getString(R.string.st_gif_missing, url)
                         bot.pushGif(JSONObject(prefs.chat), url, size)
-                        "$label skickad ($size B)"
-                    } catch (e: Exception) { "Fel: ${e.message}" }
+                        getString(R.string.st_sent, label, size)
+                    } catch (e: Exception) { getString(R.string.st_error, e.message) }
                 }
                 status.text = res
             }
         }
-        findViewById<Button>(R.id.btnHyper).setOnClickListener { pushExtra("hyperspace.gif", "🚀 Hyperrymd") }
-        findViewById<Button>(R.id.btnNotes).setOnClickListener { pushExtra("notes.gif", "🎵 Dansande noter") }
+        findViewById<Button>(R.id.btnHyper).setOnClickListener { pushExtra("hyperspace.gif", getString(R.string.btn_hyper)) }
+        findViewById<Button>(R.id.btnNotes).setOnClickListener { pushExtra("notes.gif", getString(R.string.btn_notes)) }
 
         findViewById<Button>(R.id.btnStart).setOnClickListener {
-            save()
+            save()?.let { status.text = it; return@setOnClickListener }
             val i = Intent(this, FaceService::class.java)
             if (Build.VERSION.SDK_INT >= 26) startForegroundService(i) else startService(i)
-            status.text = "Igång — uppdaterar var 5:e minut."
+            status.text = getString(R.string.st_running)
         }
 
         findViewById<Button>(R.id.btnStop).setOnClickListener {
             startService(Intent(this, FaceService::class.java).setAction("STOP"))
-            status.text = "Stoppad."
+            status.text = getString(R.string.st_stopped)
         }
     }
 

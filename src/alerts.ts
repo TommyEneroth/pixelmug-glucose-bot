@@ -2,7 +2,7 @@
  * alerts.ts — glucose warnings + 20-minute prediction for the PixelMug.
  *
  * Two kinds of warning, both surfaced as scrolling coloured text on the mug:
- *   - ACUTE   : you are already too low/high  ("UNDER 3 – ÄT NU!", "ÖVER 14!")
+ *   - ACUTE   : you are already too low/high  ("LÅGT 2.8 ↘", "HÖGT 14.2 ↗!")
  *   - PREDICT : the 20-min projection will cross a limit ("SNART UNDER 3 …")
  *
  * Prediction = current + slope × window, where slope is the least-squares trend
@@ -88,7 +88,7 @@ export function assess(
 
   if (current <= t.lowUrgent) {
     level = "urgentLow";
-    warning = { text: `LÅGT ${cur} ${arr} – ÄT NU`, color: RED };
+    warning = { text: `LÅGT ${cur} ${arr}`, color: RED };
   } else if (current >= t.highUrgent) {
     level = "urgentHigh";
     warning = { text: `HÖGT ${cur} ${arr}!`, color: RED };

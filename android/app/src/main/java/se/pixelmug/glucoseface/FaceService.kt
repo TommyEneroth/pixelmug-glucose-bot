@@ -27,9 +27,9 @@ class FaceService : Service() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (nm.getNotificationChannel(channelId) == null) {
             nm.createNotificationChannel(
-                NotificationChannel(channelId, "Glukos-mugg", NotificationManager.IMPORTANCE_LOW))
+                NotificationChannel(channelId, getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW))
         }
-        startForeground(1, notify("Startar…"))
+        startForeground(1, notify(getString(R.string.svc_starting)))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -41,7 +41,7 @@ class FaceService : Service() {
     private suspend fun loop() {
         val intervalMs = 5 * 60 * 1000L
         while (scope.isActive) {
-            val status = try { pushOnce() } catch (e: Exception) { "Fel: ${e.message}" }
+            val status = try { pushOnce() } catch (e: Exception) { getString(R.string.st_error, e.message) }
             update(status)
             delay(intervalMs)
         }
@@ -50,45 +50,48 @@ class FaceService : Service() {
     private fun pushOnce(): String {
         val token = prefs.token
         val chatStr = prefs.chat
-        if (token.isBlank()) return "Saknar bot-token."
-        if (chatStr.isBlank()) return "Muggen inte kopplad — tryck Koppla mugg."
-        if (prefs.dexUser.isBlank()) return "Saknar Dexcom-inlogg."
+        if (token.isBlank()) return getString(R.string.svc_no_token)
+        if (chatStr.isBlank()) return getString(R.string.svc_not_connected)
+        if (prefs.dexUser.isBlank()) return getString(R.string.svc_no_dexcom)
 
         val now = System.currentTimeMillis()
+        val unit = prefs.unit
+        val lim = prefs.limits
         val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
-        val a = Alerts.assess(readings, now)
+        val a = Alerts.assess(readings, now, lim)
         val chat = JSONObject(chatStr)
         val bot = BubbleBot(token)
-        val cur = if (a.current.isNaN()) "?" else String.format("%.1f", a.current)
+        val cur = Units.format(a.current, unit)
+        val u = Units.label(unit)
 
         return when (prefs.mode) {
             "text" -> {
                 val (tmpl, color) = templateFor(a.level)
-                val txt = fill(tmpl, a)
-                if (txt.isBlank()) return "$cur (${a.level}) — tom mall, hoppar över."
+                val txt = fill(tmpl, a, unit, lim)
+                if (txt.isBlank()) return getString(R.string.svc_empty_skip, cur, u, a.level)
                 bot.pushText(chat, txt, color)
-                "${a.level}: \"$txt\" — text skickad"
+                getString(R.string.svc_text_sent, a.level, txt)
             }
             "graph" -> {
                 val warn = a.level in setOf("urgentLow", "urgentHigh", "predLow", "predHigh")
                 val gif = if (warn) {
                     val (tmpl, color) = templateFor(a.level)
-                    val txt = fill(tmpl, a)
+                    val txt = fill(tmpl, a, unit, lim)
                     val ci = if (color == "#ff9500") GraphRender.TXT_AMBER else GraphRender.TXT_RED
-                    if (txt.isBlank()) GraphRender.render(readings, now)
-                    else GraphRender.renderOverlay(readings, now, txt, ci) // text scrolls OVER the graph
-                } else GraphRender.render(readings, now)
+                    if (txt.isBlank()) GraphRender.render(readings, now, lim, unit)
+                    else GraphRender.renderOverlay(readings, now, txt, ci, lim) // text scrolls OVER the graph
+                } else GraphRender.render(readings, now, lim, unit)
                 val url = bot.uploadCatbox(gif)
-                if (!url.startsWith("http")) return "Uppladdning misslyckades: ${url.take(80)}"
+                if (!url.startsWith("http")) return getString(R.string.st_upload_failed, url.take(80))
                 bot.pushGif(chat, url, gif.size.toLong())
-                "$cur mmol (${a.level}) — graf skickad"
+                getString(R.string.svc_graph_sent, cur, u, a.level)
             }
             else -> {
                 val url = prefs.gifUrl(a.expr)
                 val size = bot.gifSize(url)
-                if (size <= 0L) return "GIF saknas på: $url"
+                if (size <= 0L) return getString(R.string.st_gif_missing, url)
                 bot.pushGif(chat, url, size)
-                "$cur mmol (${a.level}) → ${a.expr}"
+                getString(R.string.svc_face_sent, cur, u, a.level, a.expr)
             }
         }
     }
@@ -102,11 +105,8 @@ class FaceService : Service() {
         else -> prefs.tplOk to "#3cc85a"
     }
 
-    private fun fill(t: String, a: Alerts.Assessment): String {
-        val v = if (a.current.isNaN()) "?" else String.format("%.1f", a.current)
-        val pred = if (a.predicted.isNaN()) "?" else String.format("%.1f", a.predicted)
-        return t.replace("{v}", v).replace("{arr}", a.arrow).replace("{pred}", pred).trim()
-    }
+    private fun fill(t: String, a: Alerts.Assessment, unit: String, lim: Limits) =
+        Templates.fill(t, a.current, a.predicted, a.arrow, unit, lim.predMin)
 
     private fun update(text: String) {
         (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(1, notify(text))
@@ -114,7 +114,7 @@ class FaceService : Service() {
 
     private fun notify(text: String): Notification =
         Notification.Builder(this, channelId)
-            .setContentTitle("Glukos-mugg")
+            .setContentTitle(getString(R.string.app_name))
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_launcher)
             .setOngoing(true)

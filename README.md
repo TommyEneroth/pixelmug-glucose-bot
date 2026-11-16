@@ -1,11 +1,17 @@
 # PixelMug Glucose Face 🤪🩸
 
-> **`face-emoji` branch** — an alternate build with **no text and no graph**. The mug shows a
-> single animated "NOT-man"-style face whose **expression is your blood glucose**.
-> (The `main` branch is the VU-meter graph version.)
+Turns a PixelMug into an ambient blood-glucose display. It reads [Dexcom Share](https://www.dexcom.com/)
+in real time and shows your glucose on the mug's 32×16 LED: as an animated face or scene that
+changes with your level, as scrolling warnings, or as a 6-hour graph. It runs as an Android app on
+your phone and talks to the mug through a [Bubble](https://github.com/bubble-im) bot.
 
-It reads [Dexcom Share](https://www.dexcom.com/) in real time, decides how it feels, and displays
-the matching animated 32×16 face on the mug via a [Bubble](https://github.com/bubble-im) bot.
+> [!WARNING]
+> **Not a medical device.** The mug is something to glance at, nothing more. It can be late, wrong
+> or silent. Never rely on it instead of your CGM's own alarms, and don't base treatment decisions
+> on it. It uses Dexcom Share, an unofficial API that Dexcom can change or close at any time.
+
+**Works in mmol/L and mg/dL**, with your own limits, Dexcom servers in the US, Japan and the rest
+of the world, and an app in English and Swedish. See [Units, limits and languages](#units-limits-and-languages).
 
 <p align="center">
   <img src="docs/face_overview.png" width="640" alt="The six glucose faces"><br>
@@ -17,16 +23,16 @@ the matching animated 32×16 face on the mug via a [Bubble](https://github.com/b
 
 | | Face | Shown when | Animation |
 |---|---|---|---|
-| <img src="docs/face_happy.gif" width="120"> | **happy** | glucose **in range** (3–14) and no warning | talks (grin opens/closes), blinks, pink cheeks |
+| <img src="docs/face_happy.gif" width="120"> | **happy** | glucose **between the urgent limits** and no warning | talks (grin opens/closes), blinks, pink cheeks |
 | <img src="docs/face_worried.gif" width="120"> | **worried** | **falling** — 20-min projection **≤ 3** | pale, brows up, frown quivers, sweat drips down |
 | <img src="docs/face_panic.gif" width="120"> | **panic** | **low, ≤ 3.0** | pale, wide eyes, red mouth screams (pulses), sweats & shakes |
 | <img src="docs/face_queasy.gif" width="120"> | **queasy** | **rising** — 20-min projection **≥ 14** | green, woozy eyes, wavy mouth ripples |
 | <img src="docs/face_sick.gif" width="120"> | **sick** | **high, ≥ 14.0** | green, X eyes, tongue lolls in and out |
 | <img src="docs/face_sleep.gif" width="120"> | **sleep** | reading **stale (> 16 min)** or no data | eyes closed, breathing, a snore bubble — never a "healthy" face on data it can't trust |
 
-Skin colour is itself a signal: **tan = fine, pale = low, green = high**. The level (and the
-20-minute prediction behind *worried* / *queasy*) comes from the same `assess()` logic as the
-graph version on `main`; only the rendering differs.
+Skin colour is itself a signal: **tan = fine, pale = low, green = high**. The numbers above are
+the defaults in mmol/L (54 and 252 mg/dL); the app lets you set your own urgent limits and
+prediction window.
 
 ## How it works
 
@@ -218,20 +224,41 @@ cd android
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-In the app: enter your **bot token** + **Dexcom** login, tap **Koppla mugg** (open the Bubble app
-and send `/start` so it can capture the chat), then **Starta**. `Testa push` fires one update.
+In the app: enter your **bot token** and **Dexcom** login, pick your **Dexcom Share server**,
+**units** and **limits**, tap **Connect mug** (open the Bubble app and send `/start` so it can
+capture the chat), then **Start**. **Test push** fires one update.
 
 Three **modes**:
-- **Ansikte** — one of the static packs (fetched from the GIF base URL). Pick with a live preview.
-- **Text** — native scrolling warnings via the mug's own font service (no hosting). The six
-  warning texts are **editable** with `{v}` / `{arr}` / `{pred}` placeholders.
-- **Graf** — the phone renders the 32×16 VU-meter GIF on-device (`Gif.kt` + `GraphRender.kt`) and
-  uploads each frame to litterbox (temporary public URL) for the mug to fetch. No PC needed.
+- **Face**: one of the packs (fetched from the GIF base URL). Pick with a live preview.
+- **Text**: scrolling warnings via the mug's own font service (no hosting). The six warning texts
+  are **editable** with `{v}` / `{arr}` / `{pred}` / `{min}` placeholders.
+- **Graph**: the phone renders the 32×16 VU-meter GIF itself (`Gif.kt` + `GraphRender.kt`) and
+  uploads each frame to litterbox for the mug to fetch. Warnings scroll over the graph.
+
+> [!CAUTION]
+> Graph mode uploads a picture of your glucose graph to a **public, anonymous** file host
+> (litterbox.catbox.moe) every five minutes; each picture is kept for an hour. Face and Text modes
+> don't upload any health data. Moving the rendering onto the mug itself will remove this.
 
 > The mug fetches each face from a **public URL** (`GIF base URL` → `<base>/packs/<pack>/<expr>.gif`).
-> The six GIFs per pack are static, so host them once anywhere public — e.g. make this repo public
-> and use the jsDelivr default (`https://cdn.jsdelivr.net/gh/<user>/pixelmug-glucose-bot@face-emoji`),
-> or point the base URL at any static host / bucket.
+> The default is this repo through jsDelivr (`https://cdn.jsdelivr.net/gh/TommyEneroth/pixelmug-glucose-bot@main`);
+> point it at your own fork or any static host to serve your own packs.
+
+## Units, limits and languages
+
+- **Units:** mmol/L or mg/dL. A new install picks the unit your country uses (mmol/L in the
+  Nordics, UK, Ireland, the Netherlands, Canada, Australia and a few more; mg/dL elsewhere).
+  Everything is computed in mg/dL, which is what Dexcom sends; mmol/L is only for display.
+- **Limits:** urgent low, target range and urgent high, plus the prediction window (5–60 min).
+  Defaults: 3.0 / 3.9–10.0 / 14.0 mmol/L (54 / 70–180 / 252 mg/dL). The graph colours and its
+  shaded band follow your target range. The app won't save limits that are out of order.
+- **Dexcom Share server:** outside the US (default), US, or Japan, which has its own server.
+- **Languages:** the app is in English, with Swedish if the phone is set to Swedish. The default
+  warning texts follow the phone's language too, and stay neutral: they state the value and trend,
+  never what to do about it. Write your own if you want more.
+- **On the mug:** the pixel font has A–Z, Å, Ä, Ö, digits and a few symbols. Other accented
+  letters show as their base letter (Ü→U, É→E, Ñ→N, Æ→AE, Ø→O). Scripts like Japanese or Chinese
+  can't fit in 32×16 pixels; use the Face mode packs, which have no text.
 
 ## Project layout
 
@@ -256,15 +283,23 @@ Three **modes**:
   mouth has a dark-red interior; happy gets pink cheeks.
 - Each mood has an **animated mouth** (talk / scream-pulse / quiver / ripple / tongue / breathe)
   plus expressive eyebrows and a crooked NOT-man moustache.
-- Thresholds are env-configurable (`LOW_URGENT`, `HIGH_URGENT`, `PRED_WINDOW_MIN`); the
-  prediction is `current + least-squares slope × window`, not Dexcom's laggy arrow.
+- Thresholds are configurable (in the app, or `LOW_URGENT`, `HIGH_URGENT`, `PRED_WINDOW_MIN` for
+  the bot); the prediction is `current + least-squares slope × window`, not Dexcom's laggy arrow.
 - **Stale > 16 min → asleep**, never a "healthy" face — an old value must not look reassuring.
 - Skin colour is itself a signal: tan = fine, pale = low, green = high.
 
 ## Security
 - No secrets in the repo: `.env` is gitignored; credentials come from env only.
 - The third-party SDK is fetched at setup time, not redistributed here.
+- The Android app keeps your Dexcom login and bot token in the app's private storage on the phone,
+  not encrypted. Encrypting them is on the to-do list.
+
+## License
+
+The code is [MIT](LICENSE). The **Snobben**, **Mumin** and **Pac-Man** packs are fan homages to
+characters owned by others (Peanuts, Moomin Characters, Bandai Namco). They're made for personal
+use on your own mug and are not covered by the MIT license; don't redistribute or sell them.
 
 ---
-Built for a PixelMug P1. A playful nod to the Anthrax "NOT-man" — not affiliated with Anthrax,
-PixelMug / jeejio, or Dexcom. Not a medical device.
+Built for the PixelMug P1 and S1 Pro. A playful nod to the Anthrax "NOT-man", not affiliated with
+Anthrax, PixelMug / jeejio, or Dexcom. Not a medical device.

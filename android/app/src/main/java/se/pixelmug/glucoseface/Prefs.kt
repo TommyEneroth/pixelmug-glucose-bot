@@ -1,9 +1,10 @@
 package se.pixelmug.glucoseface
 
 import android.content.Context
+import java.util.Locale
 
-/** Simple persistent settings. */
-class Prefs(ctx: Context) {
+/** Simple persistent settings. Glucose limits are stored in mg/dL. */
+class Prefs(private val ctx: Context) {
     private val sp = ctx.getSharedPreferences("glucoseface", Context.MODE_PRIVATE)
 
     var token: String
@@ -18,13 +19,42 @@ class Prefs(ctx: Context) {
         get() = sp.getString("dexPass", "") ?: ""
         set(v) = sp.edit().putString("dexPass", v).apply()
 
+    /** Dexcom Share server: "eu" (outside the US), "us" or "jp". */
     var region: String
         get() = sp.getString("region", "eu") ?: "eu"
         set(v) = sp.edit().putString("region", v).apply()
 
+    /**
+     * "mmol" or "mgdl". New installs follow the phone's country; installs from before
+     * units existed (a Dexcom login is already saved) keep mmol, which was all they had.
+     */
+    var unit: String
+        get() = sp.getString("unit", null)
+            ?: if (sp.contains("dexUser")) Units.MMOL else Units.defaultFor(Locale.getDefault())
+        set(v) = sp.edit().putString("unit", v).apply()
+
+    var limits: Limits
+        get() {
+            val d = Limits()
+            return Limits(
+                urgentLow = sp.getFloat("limUrgentLow", d.urgentLow.toFloat()).toDouble(),
+                urgentHigh = sp.getFloat("limUrgentHigh", d.urgentHigh.toFloat()).toDouble(),
+                rangeLow = sp.getFloat("limRangeLow", d.rangeLow.toFloat()).toDouble(),
+                rangeHigh = sp.getFloat("limRangeHigh", d.rangeHigh.toFloat()).toDouble(),
+                predMin = sp.getInt("limPredMin", d.predMin),
+            )
+        }
+        set(v) = sp.edit()
+            .putFloat("limUrgentLow", v.urgentLow.toFloat())
+            .putFloat("limUrgentHigh", v.urgentHigh.toFloat())
+            .putFloat("limRangeLow", v.rangeLow.toFloat())
+            .putFloat("limRangeHigh", v.rangeHigh.toFloat())
+            .putInt("limPredMin", v.predMin)
+            .apply()
+
     /** Public base URL that serves the pack GIFs, e.g. .../<base>/packs/<pack>/<expr>.gif */
     var gifBase: String
-        get() = sp.getString("gifBase", "https://cdn.jsdelivr.net/gh/TommyEneroth/pixelmug-glucose-bot@face-emoji") ?: ""
+        get() = sp.getString("gifBase", "https://cdn.jsdelivr.net/gh/TommyEneroth/pixelmug-glucose-bot@main") ?: ""
         set(v) = sp.edit().putString("gifBase", v.trimEnd('/')).apply()
 
     var pack: String
@@ -41,22 +71,23 @@ class Prefs(ctx: Context) {
         get() = sp.getString("mode", "face") ?: "face"
         set(v) = sp.edit().putString("mode", v).apply()
 
-    // Editable scroll-text templates. Placeholders: {v}=value, {arr}=arrow, {pred}=prediction.
-    private fun tpl(key: String, def: String) = sp.getString("tpl_$key", def) ?: def
+    // Editable scroll-text templates. Defaults come from the phone's language; once
+    // saved they are the user's own. Placeholders: {v} {arr} {pred} {min}.
+    private fun tpl(key: String, def: Int) = sp.getString("tpl_$key", null) ?: ctx.getString(def)
     private fun setTpl(key: String, v: String) = sp.edit().putString("tpl_$key", v).apply()
 
     var tplLow: String
-        get() = tpl("low", "LÅGT {v} {arr} – ÄT NU"); set(v) = setTpl("low", v)
+        get() = tpl("low", R.string.tpl_low_default); set(v) = setTpl("low", v)
     var tplHigh: String
-        get() = tpl("high", "HÖGT {v} {arr}!"); set(v) = setTpl("high", v)
+        get() = tpl("high", R.string.tpl_high_default); set(v) = setTpl("high", v)
     var tplPredLow: String
-        get() = tpl("predlow", "SNART LÅGT {v} {arr} ~{pred} om 20 min"); set(v) = setTpl("predlow", v)
+        get() = tpl("predlow", R.string.tpl_pred_low_default); set(v) = setTpl("predlow", v)
     var tplPredHigh: String
-        get() = tpl("predhigh", "SNART HÖGT {v} {arr} ~{pred} om 20 min"); set(v) = setTpl("predhigh", v)
+        get() = tpl("predhigh", R.string.tpl_pred_high_default); set(v) = setTpl("predhigh", v)
     var tplOk: String
-        get() = tpl("ok", "{v} {arr}"); set(v) = setTpl("ok", v)
+        get() = tpl("ok", R.string.tpl_ok_default); set(v) = setTpl("ok", v)
     var tplStale: String
-        get() = tpl("stale", "GAMMALT {v}?"); set(v) = setTpl("stale", v)
+        get() = tpl("stale", R.string.tpl_stale_default); set(v) = setTpl("stale", v)
 
     /** The Bubble chat (JSON) the mug is attached to; captured from the platform. */
     var chat: String

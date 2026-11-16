@@ -12,43 +12,86 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Glukos-mugg"
+            android:text="@string/app_name"
             android:textSize="22sp"
             android:textStyle="bold"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/disclaimer"
+            android:textSize="13sp"
+            android:alpha="0.8"
             android:paddingBottom="12dp" />
 
-        <EditText android:id="@+id/token" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Bot-token" android:inputType="text" />
-        <EditText android:id="@+id/dexUser" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Dexcom-användarnamn" android:inputType="text" />
-        <EditText android:id="@+id/dexPass" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Dexcom-lösenord" android:inputType="textPassword" />
-        <EditText android:id="@+id/gifBase" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="GIF bas-URL" android:inputType="textUri" />
+        <EditText android:id="@+id/token" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_token" android:inputType="text" android:autofillHints="password" />
+        <EditText android:id="@+id/dexUser" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_dex_user" android:inputType="text" android:autofillHints="username" />
+        <EditText android:id="@+id/dexPass" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_dex_pass" android:inputType="textPassword" android:autofillHints="password" />
+        <EditText android:id="@+id/gifBase" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_gif_base" android:inputType="textUri" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Läge:" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_region" />
+        <RadioGroup android:id="@+id/region" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <RadioButton android:id="@+id/regionOus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_ous" android:checked="true" />
+            <RadioButton android:id="@+id/regionUs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_us" />
+            <RadioButton android:id="@+id/regionJp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_jp" />
+        </RadioGroup>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_unit" />
+        <RadioGroup android:id="@+id/unit" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <RadioButton android:id="@+id/unitMmol" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/unit_mmol" android:checked="true" />
+            <RadioButton android:id="@+id/unitMgdl" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/unit_mgdl" />
+        </RadioGroup>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_limits" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/label_urgent_low" />
+            <EditText android:id="@+id/limUrgentLow" android:layout_width="96dp" android:layout_height="wrap_content" android:inputType="numberDecimal" android:importantForAutofill="no" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/label_range_low" />
+            <EditText android:id="@+id/limRangeLow" android:layout_width="96dp" android:layout_height="wrap_content" android:inputType="numberDecimal" android:importantForAutofill="no" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/label_range_high" />
+            <EditText android:id="@+id/limRangeHigh" android:layout_width="96dp" android:layout_height="wrap_content" android:inputType="numberDecimal" android:importantForAutofill="no" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/label_urgent_high" />
+            <EditText android:id="@+id/limUrgentHigh" android:layout_width="96dp" android:layout_height="wrap_content" android:inputType="numberDecimal" android:importantForAutofill="no" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/label_pred_min" />
+            <EditText android:id="@+id/limPredMin" android:layout_width="96dp" android:layout_height="wrap_content" android:inputType="number" android:importantForAutofill="no" />
+        </LinearLayout>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_mode" />
         <RadioGroup android:id="@+id/mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <RadioButton android:id="@+id/modeFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ansikte" android:checked="true" />
-            <RadioButton android:id="@+id/modeText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text" />
-            <RadioButton android:id="@+id/modeGraph" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Graf" />
+            <RadioButton android:id="@+id/modeFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/mode_face" android:checked="true" />
+            <RadioButton android:id="@+id/modeText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/mode_text" />
+            <RadioButton android:id="@+id/modeGraph" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/mode_graph" />
         </RadioGroup>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Mugg-färg:" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_mug" />
         <RadioGroup android:id="@+id/mug" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <RadioButton android:id="@+id/mugBlack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Svart (S1 Pro)" android:checked="true" />
-            <RadioButton android:id="@+id/mugWhite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vit (P1)" />
+            <RadioButton android:id="@+id/mugBlack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/mug_black" android:checked="true" />
+            <RadioButton android:id="@+id/mugWhite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/mug_white" />
         </RadioGroup>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="Paket (Ansikte-läge):" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_pack" />
         <RadioGroup android:id="@+id/pack" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <RadioButton android:id="@+id/packSnobben" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Snobben (Snoopy)" android:checked="true" />
-            <RadioButton android:id="@+id/packMumin" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mumin" />
-            <RadioButton android:id="@+id/packPacman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Pac-Man" />
-            <RadioButton android:id="@+id/packEmoji" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Emoji" />
-            <RadioButton android:id="@+id/packNotman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="NOT-man (Anthrax)" />
-            <RadioButton android:id="@+id/packWeather" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Väder (himmel = glukos)" />
-            <RadioButton android:id="@+id/packFire" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lägereld (låga = glukos)" />
-            <RadioButton android:id="@+id/packAqua" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Akvarium (fisk = glukos)" />
-            <RadioButton android:id="@+id/packLava" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lavalampa (klump = glukos)" />
-            <RadioButton android:id="@+id/packMatrix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Matrix (kodregn = glukos)" />
-            <RadioButton android:id="@+id/packSpace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rymd (stjärnor = glukos)" />
-            <RadioButton android:id="@+id/packSynth" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Synthwave (sol = glukos)" />
+            <RadioButton android:id="@+id/packSnobben" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_snobben" android:checked="true" />
+            <RadioButton android:id="@+id/packMumin" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_mumin" />
+            <RadioButton android:id="@+id/packPacman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_pacman" />
+            <RadioButton android:id="@+id/packEmoji" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_emoji" />
+            <RadioButton android:id="@+id/packNotman" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_notman" />
+            <RadioButton android:id="@+id/packWeather" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_weather" />
+            <RadioButton android:id="@+id/packFire" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_fire" />
+            <RadioButton android:id="@+id/packAqua" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_aqua" />
+            <RadioButton android:id="@+id/packLava" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_lava" />
+            <RadioButton android:id="@+id/packMatrix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_matrix" />
+            <RadioButton android:id="@+id/packSpace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_space" />
+            <RadioButton android:id="@+id/packSynth" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pack_synth" />
         </RadioGroup>
 
         <ImageView
@@ -58,25 +101,30 @@
             android:layout_marginTop="6dp"
             android:adjustViewBounds="true"
             android:background="#F0EEE8"
-            android:contentDescription="Förhandsvisning av paketet"
+            android:contentDescription="@string/preview_desc"
             android:scaleType="fitCenter" />
 
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="14dp"
-            android:text="Rulltexter (Text-läge). Platshållare: {v}=värde, {arr}=pil, {pred}=prognos" />
-        <EditText android:id="@+id/tplLow" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Akut lågt (≤3)" android:inputType="text" />
-        <EditText android:id="@+id/tplHigh" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Akut högt (≥14)" android:inputType="text" />
-        <EditText android:id="@+id/tplPredLow" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Förvarning lågt" android:inputType="text" />
-        <EditText android:id="@+id/tplPredHigh" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Förvarning högt" android:inputType="text" />
-        <EditText android:id="@+id/tplOk" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Normalt (i range) — lämna tomt för inget" android:inputType="text" />
-        <EditText android:id="@+id/tplStale" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Gammalt värde" android:inputType="text" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="14dp" android:text="@string/label_templates" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:text="@string/label_tpl_low" android:alpha="0.7" />
+        <EditText android:id="@+id/tplLow" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:importantForAutofill="no" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/label_tpl_high" android:alpha="0.7" />
+        <EditText android:id="@+id/tplHigh" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:importantForAutofill="no" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/label_tpl_pred_low" android:alpha="0.7" />
+        <EditText android:id="@+id/tplPredLow" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:importantForAutofill="no" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/label_tpl_pred_high" android:alpha="0.7" />
+        <EditText android:id="@+id/tplPredHigh" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:importantForAutofill="no" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/label_tpl_ok" android:alpha="0.7" />
+        <EditText android:id="@+id/tplOk" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:importantForAutofill="no" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/label_tpl_stale" android:alpha="0.7" />
+        <EditText android:id="@+id/tplStale" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:importantForAutofill="no" />
 
-        <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Koppla mugg (öppna Bubble, skicka /start)" />
-        <Button android:id="@+id/btnTest" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Testa push (happy)" />
-        <Button android:id="@+id/btnHyper" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🚀 Hyperrymd (Falcon)" />
-        <Button android:id="@+id/btnNotes" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🎵 Dansande noter" />
-        <Button android:id="@+id/btnStart" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Starta (var 5:e min)" />
-        <Button android:id="@+id/btnStop" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Stoppa" />
+        <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/btn_capture" />
+        <Button android:id="@+id/btnTest" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_test" />
+        <Button android:id="@+id/btnHyper" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_hyper" />
+        <Button android:id="@+id/btnNotes" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_notes" />
+        <Button android:id="@+id/btnStart" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_start" />
+        <Button android:id="@+id/btnStop" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_stop" />
 
-        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="16dp" android:text="Redo." android:textIsSelectable="true" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="16dp" android:text="@string/status_ready" android:textIsSelectable="true" />
     </LinearLayout>
 </ScrollView>

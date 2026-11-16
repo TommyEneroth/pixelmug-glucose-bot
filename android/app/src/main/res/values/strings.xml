@@ -1,3 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Glukos-mugg</string>
+    <string name="app_name">Glucose Mug</string>
+    <string name="disclaimer">Not a medical device. The mug is only something to glance at. Never rely on it instead of your CGM\'s own alarms, and don\'t base treatment decisions on it.</string>
+
+    <!-- Accounts -->
+    <string name="hint_token">Bot token</string>
+    <string name="hint_dex_user">Dexcom username</string>
+    <string name="hint_dex_pass">Dexcom password</string>
+    <string name="hint_gif_base">GIF base URL</string>
+    <string name="label_region">Dexcom Share server:</string>
+    <string name="region_ous">Outside US</string>
+    <string name="region_us">US</string>
+    <string name="region_jp">Japan</string>
+
+    <!-- Units and limits -->
+    <string name="label_unit">Units:</string>
+    <string name="unit_mmol" translatable="false">mmol/L</string>
+    <string name="unit_mgdl" translatable="false">mg/dL</string>
+    <string name="label_limits">Limits (in the unit above):</string>
+    <string name="label_urgent_low">Urgent low, at or below</string>
+    <string name="label_range_low">Target range, lowest</string>
+    <string name="label_range_high">Target range, highest</string>
+    <string name="label_urgent_high">Urgent high, at or above</string>
+    <string name="label_pred_min">Prediction window, minutes</string>
+
+    <!-- Display -->
+    <string name="label_mode">Mode:</string>
+    <string name="mode_face">Face</string>
+    <string name="mode_text">Text</string>
+    <string name="mode_graph">Graph</string>
+    <string name="label_mug">Mug colour:</string>
+    <string name="mug_black">Black (S1 Pro)</string>
+    <string name="mug_white">White (P1)</string>
+    <string name="label_pack">Pack (Face mode):</string>
+    <string name="pack_snobben">Snobben (Snoopy)</string>
+    <string name="pack_mumin">Moomin</string>
+    <string name="pack_pacman" translatable="false">Pac-Man</string>
+    <string name="pack_emoji">Emoji</string>
+    <string name="pack_notman">NOT-man (Anthrax)</string>
+    <string name="pack_weather">Weather (sky = glucose)</string>
+    <string name="pack_fire">Campfire (flame = glucose)</string>
+    <string name="pack_aqua">Aquarium (fish = glucose)</string>
+    <string name="pack_lava">Lava lamp (blobs = glucose)</string>
+    <string name="pack_matrix">Matrix (code rain = glucose)</string>
+    <string name="pack_space">Space (stars = glucose)</string>
+    <string name="pack_synth">Synthwave (sun = glucose)</string>
+    <string name="preview_desc">Preview of the selected pack</string>
+
+    <!-- Scroll texts -->
+    <string name="label_templates">Scrolling texts (Text and Graph modes). Placeholders: {v} value, {arr} trend arrow, {pred} prediction, {min} prediction minutes.</string>
+    <string name="label_tpl_low">Urgent low</string>
+    <string name="label_tpl_high">Urgent high</string>
+    <string name="label_tpl_pred_low">Low soon</string>
+    <string name="label_tpl_pred_high">High soon</string>
+    <string name="label_tpl_ok">In range (leave empty for no text)</string>
+    <string name="label_tpl_stale">Old reading</string>
+    <string name="tpl_low_default">LOW {v} {arr}</string>
+    <string name="tpl_high_default">HIGH {v} {arr}</string>
+    <string name="tpl_pred_low_default">LOW SOON {v} {arr} ~{pred} IN {min} MIN</string>
+    <string name="tpl_pred_high_default">HIGH SOON {v} {arr} ~{pred} IN {min} MIN</string>
+    <string name="tpl_ok_default" translatable="false">{v} {arr}</string>
+    <string name="tpl_stale_default">OLD {v}?</string>
+
+    <!-- Buttons -->
+    <string name="btn_capture">Connect mug (open Bubble, send /start)</string>
+    <string name="btn_test">Test push</string>
+    <string name="btn_hyper">🚀 Hyperspace (Falcon)</string>
+    <string name="btn_notes">🎵 Dancing notes</string>
+    <string name="btn_start">Start (every 5 min)</string>
+    <string name="btn_stop">Stop</string>
+
+    <!-- Status -->
+    <string name="status_ready">Ready.</string>
+    <string name="st_capture_wait">Open the Bubble app and send /start to the bot…</string>
+    <string name="st_capture_none">No chat captured. Send /start in Bubble and try again.</string>
+    <string name="st_capture_ok">Mug connected ✔ (chat saved)</string>
+    <string name="st_error">Error: %1$s</string>
+    <string name="st_sending_test">Sending test…</string>
+    <string name="st_connect_first">Connect the mug first.</string>
+    <string name="st_empty_template">Empty template.</string>
+    <string name="st_sent_text">Sent text: \"%1$s\"</string>
+    <string name="st_fill_dexcom">Enter your Dexcom login first.</string>
+    <string name="st_upload_failed">Upload failed: %1$s</string>
+    <string name="st_sent_graph">Graph + text (%1$d B) uploaded and sent</string>
+    <string name="st_gif_missing">GIF missing: %1$s</string>
+    <string name="st_sent_happy">Sent happy (%1$d B)</string>
+    <string name="st_sending">Sending %1$s…</string>
+    <string name="st_sent">%1$s sent (%2$d B)</string>
+    <string name="st_running">Running, updating every 5 minutes.</string>
+    <string name="st_stopped">Stopped.</string>
+    <string name="st_bad_limits">Check the limits: urgent low &lt; target lowest &lt; target highest &lt; urgent high, and a prediction window of 5–60 minutes.</string>
+
+    <!-- Background service -->
+    <string name="svc_starting">Starting…</string>
+    <string name="svc_no_token">Bot token missing.</string>
+    <string name="svc_not_connected">Mug not connected. Tap Connect mug.</string>
+    <string name="svc_no_dexcom">Dexcom login missing.</string>
+    <string name="svc_empty_skip">%1$s %2$s (%3$s): empty template, skipping.</string>
+    <string name="svc_text_sent">%1$s: \"%2$s\" sent as text</string>
+    <string name="svc_graph_sent">%1$s %2$s (%3$s): graph sent</string>
+    <string name="svc_face_sent">%1$s %2$s (%3$s) → %4$s</string>
 </resources>
