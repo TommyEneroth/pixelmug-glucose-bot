@@ -29,6 +29,14 @@ class MainActivity : AppCompatActivity() {
         val dexUser = findViewById<EditText>(R.id.dexUser)
         val dexPass = findViewById<EditText>(R.id.dexPass)
         val gifBase = findViewById<EditText>(R.id.gifBase)
+        val source = findViewById<RadioGroup>(R.id.source)
+        val nsUrl = findViewById<EditText>(R.id.nsUrl)
+        val nsSecret = findViewById<EditText>(R.id.nsSecret)
+        val lluEmail = findViewById<EditText>(R.id.lluEmail)
+        val lluPass = findViewById<EditText>(R.id.lluPass)
+        val boxDexcom = findViewById<LinearLayout>(R.id.boxDexcom)
+        val boxNightscout = findViewById<LinearLayout>(R.id.boxNightscout)
+        val boxLibre = findViewById<LinearLayout>(R.id.boxLibre)
         val region = findViewById<RadioGroup>(R.id.region)
         val unit = findViewById<RadioGroup>(R.id.unit)
         val limUrgentLow = findViewById<EditText>(R.id.limUrgentLow)
@@ -55,6 +63,21 @@ class MainActivity : AppCompatActivity() {
         tplLow.setText(prefs.tplLow); tplHigh.setText(prefs.tplHigh)
         tplPredLow.setText(prefs.tplPredLow); tplPredHigh.setText(prefs.tplPredHigh)
         tplOk.setText(prefs.tplOk); tplStale.setText(prefs.tplStale)
+
+        // Only the selected source's fields are shown; the others keep what was typed.
+        fun showSource() {
+            val id = source.checkedRadioButtonId
+            boxDexcom.visibility = if (id == R.id.sourceDexcom) android.view.View.VISIBLE else android.view.View.GONE
+            boxNightscout.visibility = if (id == R.id.sourceNightscout) android.view.View.VISIBLE else android.view.View.GONE
+            boxLibre.visibility = if (id == R.id.sourceLibre) android.view.View.VISIBLE else android.view.View.GONE
+        }
+        source.check(when (prefs.source) {
+            Sources.NIGHTSCOUT -> R.id.sourceNightscout; Sources.LIBRE -> R.id.sourceLibre; else -> R.id.sourceDexcom
+        })
+        showSource()
+        source.setOnCheckedChangeListener { _, _ -> showSource() }
+        nsUrl.setText(prefs.nsUrl); nsSecret.setText(prefs.nsSecret)
+        lluEmail.setText(prefs.lluEmail); lluPass.setText(prefs.lluPass)
 
         token.setText(prefs.token)
         dexUser.setText(prefs.dexUser)
@@ -122,6 +145,11 @@ class MainActivity : AppCompatActivity() {
             prefs.dexUser = dexUser.text.toString().trim()
             prefs.dexPass = dexPass.text.toString()
             prefs.gifBase = gifBase.text.toString().trim()
+            prefs.source = when (source.checkedRadioButtonId) {
+                R.id.sourceNightscout -> Sources.NIGHTSCOUT; R.id.sourceLibre -> Sources.LIBRE; else -> Sources.DEXCOM
+            }
+            prefs.nsUrl = nsUrl.text.toString().trim(); prefs.nsSecret = nsSecret.text.toString().trim()
+            prefs.lluEmail = lluEmail.text.toString().trim(); prefs.lluPass = lluPass.text.toString()
             prefs.region = when (region.checkedRadioButtonId) {
                 R.id.regionUs -> "us"; R.id.regionJp -> "jp"; else -> "eu"
             }
@@ -149,6 +177,8 @@ class MainActivity : AppCompatActivity() {
                 rangeLow = mgdl(limRangeLow), rangeHigh = mgdl(limRangeHigh),
                 predMin = limPredMin.text.toString().trim().toIntOrNull() ?: -1,
             )
+            if (prefs.source == Sources.NIGHTSCOUT && prefs.nsUrl.isNotBlank() && Nightscout.normalizeUrl(prefs.nsUrl) == null)
+                return getString(R.string.st_bad_ns_url)
             if (!lim.isValid()) return getString(R.string.st_bad_limits)
             prefs.limits = lim
             return null
@@ -190,8 +220,8 @@ class MainActivity : AppCompatActivity() {
                                 getString(R.string.st_sent_text, sample)
                             }
                             "graph" -> {
-                                if (prefs.dexUser.isBlank()) return@withContext getString(R.string.st_fill_dexcom)
-                                val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
+                                val source = Sources.from(prefs) ?: return@withContext getString(R.string.st_fill_source)
+                                val readings = source.fetchSeries(6)
                                 val gif = GraphRender.renderOverlay(readings, System.currentTimeMillis(),
                                     sample, GraphRender.TXT_RED, lim)
                                 val url = bot.uploadCatbox(gif)

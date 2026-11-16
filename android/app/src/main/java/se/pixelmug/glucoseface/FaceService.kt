@@ -11,7 +11,7 @@ import kotlinx.coroutines.*
 import org.json.JSONObject
 
 /**
- * Foreground service: every 5 min fetch Dexcom, pick the face expression, and
+ * Foreground service: every 5 min fetch glucose (Dexcom, Nightscout or LibreLinkUp), pick the face expression, and
  * push the matching GIF to the mug. Runs on the phone so no PC/tunnel is needed.
  */
 class FaceService : Service() {
@@ -52,12 +52,12 @@ class FaceService : Service() {
         val chatStr = prefs.chat
         if (token.isBlank()) return getString(R.string.svc_no_token)
         if (chatStr.isBlank()) return getString(R.string.svc_not_connected)
-        if (prefs.dexUser.isBlank()) return getString(R.string.svc_no_dexcom)
+        val source = Sources.from(prefs) ?: return getString(R.string.svc_no_source)
 
         val now = System.currentTimeMillis()
         val unit = prefs.unit
         val lim = prefs.limits
-        val readings = Dexcom(prefs.dexUser, prefs.dexPass, prefs.region).fetchSeries(6)
+        val readings = source.fetchSeries(6)
         val a = Alerts.assess(readings, now, lim)
         val chat = JSONObject(chatStr)
         val bot = BubbleBot(token)

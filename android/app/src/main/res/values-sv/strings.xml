@@ -70,7 +70,7 @@
     <string name="st_connect_first">Koppla muggen först.</string>
     <string name="st_empty_template">Tom mall.</string>
     <string name="st_sent_text">Skickade text: \"%1$s\"</string>
-    <string name="st_fill_dexcom">Fyll i Dexcom-inloggningen först.</string>
+    <string name="st_fill_source">Ställ först in var glukosvärdena kommer ifrån (Dexcom, Nightscout eller LibreLinkUp).</string>
     <string name="st_upload_failed">Uppladdningen misslyckades: %1$s</string>
     <string name="st_sent_graph">Graf + text (%1$d B) uppladdad och skickad</string>
     <string name="st_gif_missing">GIF saknas: %1$s</string>
@@ -84,9 +84,22 @@
     <string name="svc_starting">Startar…</string>
     <string name="svc_no_token">Saknar bot-token.</string>
     <string name="svc_not_connected">Muggen är inte kopplad. Tryck Koppla mugg.</string>
-    <string name="svc_no_dexcom">Saknar Dexcom-inloggning.</string>
+    <string name="svc_no_source">Glukoskälla saknas.</string>
     <string name="svc_empty_skip">%1$s %2$s (%3$s): tom mall, hoppar över.</string>
     <string name="svc_text_sent">%1$s: \"%2$s\" skickad som text</string>
     <string name="svc_graph_sent">%1$s %2$s (%3$s): graf skickad</string>
     <string name="svc_face_sent">%1$s %2$s (%3$s) → %4$s</string>
+
+    <!-- glukoskällor -->
+    <string name="label_source">Glukos från:</string>
+    <string name="source_dexcom">Dexcom</string>
+    <string name="source_nightscout">Nightscout</string>
+    <string name="source_libre">LibreLinkUp</string>
+    <string name="hint_ns_url">Nightscout-adress (https://…)</string>
+    <string name="hint_ns_secret">Token eller API secret (valfritt)</string>
+    <string name="note_nightscout">Fungerar med alla sensorer som skickar till Nightscout. Bäst: en åtkomsttoken med rollen readable, skapad under Admin tools.</string>
+    <string name="hint_llu_email">LibreLinkUp-e-post</string>
+    <string name="hint_llu_pass">LibreLinkUp-lösenord</string>
+    <string name="note_libre">FreeStyle Libre: logga in med ett LibreLinkUp-följarkonto som Libre-användaren har bjudit in från LibreLink-appen. Regionen hittas automatiskt.</string>
+    <string name="st_bad_ns_url">Nightscout-adressen måste börja med https://</string>
 </resources>

@@ -1,17 +1,19 @@
 # PixelMug Glucose Face 🤪🩸
 
-Turns a PixelMug into an ambient blood-glucose display. It reads [Dexcom Share](https://www.dexcom.com/)
-in real time and shows your glucose on the mug's 32×16 LED: as an animated face or scene that
+Turns a PixelMug into an ambient blood-glucose display. It reads your CGM in real time from
+**Dexcom Share**, **Nightscout** or **LibreLinkUp** (FreeStyle Libre) and shows your glucose on the mug's 32×16 LED: as an animated face or scene that
 changes with your level, as scrolling warnings, or as a 6-hour graph. It runs as an Android app on
 your phone and talks to the mug through a [Bubble](https://github.com/bubble-im) bot.
 
 > [!WARNING]
 > **Not a medical device.** The mug is something to glance at, nothing more. It can be late, wrong
 > or silent. Never rely on it instead of your CGM's own alarms, and don't base treatment decisions
-> on it. It uses Dexcom Share, an unofficial API that Dexcom can change or close at any time.
+> on it. Dexcom Share and LibreLinkUp are unofficial APIs that Dexcom and Abbott can change or
+> close at any time.
 
-**Works in mmol/L and mg/dL**, with your own limits, Dexcom servers in the US, Japan and the rest
-of the world, and an app in English and Swedish. See [Units, limits and languages](#units-limits-and-languages).
+**Works with Dexcom, FreeStyle Libre and anything that feeds Nightscout**, in mmol/L and mg/dL,
+with your own limits and an app in English and Swedish. See [Glucose sources](#glucose-sources) and
+[Units, limits and languages](#units-limits-and-languages).
 
 <p align="center">
   <img src="docs/mug/notman.webp" width="560" alt="The built-in face on a black PixelMug S1 Pro, cycling through the six glucose states"><br>
@@ -69,7 +71,7 @@ See [HOSTING.md](HOSTING.md) for tailscale-funnel and bucket options.
 ### Running against a real mug
 
 ```bash
-cp .env.example .env # fill in BOT_TOKEN, Dexcom creds, GIF_PUBLIC_BASE_URL
+cp .env.example .env # fill in BOT_TOKEN, one glucose source, GIF_PUBLIC_BASE_URL
 bun run bot
 ```
 
@@ -233,7 +235,7 @@ It needs Python 3 with Pillow and numpy. For the white P1 there is `scripts/mug_
 ## Run on the phone (Android app)
 
 `android/` is a native Kotlin app that runs the whole loop **on your phone** — no PC, no tunnel.
-Every 5 min it fetches Dexcom, picks the expression, and pushes the matching pack GIF to the mug
+Every 5 min it fetches your glucose, picks the expression, and pushes the matching pack GIF to the mug
 via the Bubble bot API (a foreground service).
 
 **Install:** download `PixelMugGlucoseFace-<version>.apk` from the
@@ -248,7 +250,7 @@ SHA-256  31:3B:B6:4B:ED:4E:8F:64:02:C5:74:56:A5:2F:11:8F:B7:F2:60:6C:59:CE:32:D2
 ```
 
 (`apksigner verify --print-certs PixelMugGlucoseFace-*.apk`, or apps like AppVerifier.) Your
-settings, including the Dexcom login, are kept out of Android's cloud backup and device transfer.
+settings, including your CGM login, are kept out of Android's cloud backup and device transfer.
 
 **Build it yourself** instead:
 
@@ -262,8 +264,8 @@ The debug build installs next to the release one (`.debug` suffix). For signed r
 put a `keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`) in `android/`
 and run `./gradlew :app:assembleRelease`; see `scripts/release.sh`.
 
-In the app: enter your **bot token** and **Dexcom** login, pick your **Dexcom Share server**,
-**units** and **limits**, tap **Connect mug** (open the Bubble app and send `/start` so it can
+In the app: enter your **bot token**, choose where your **glucose** comes from (Dexcom,
+Nightscout or LibreLinkUp, see below) and fill in its login, pick your **units** and **limits**, tap **Connect mug** (open the Bubble app and send `/start` so it can
 capture the chat), then **Start**. **Test push** fires one update.
 
 Three **modes**:
@@ -295,15 +297,33 @@ level, and writes the GIFs to `docs/graph/`.
 > The default is this repo through jsDelivr (`https://cdn.jsdelivr.net/gh/TommyEneroth/pixelmug-glucose-bot@main`);
 > point it at your own fork or any static host to serve your own packs.
 
+## Glucose sources
+
+| Source | For | What you enter |
+|---|---|---|
+| **Dexcom** | Dexcom G6 / G7 / ONE+ with Share switched on | Your Dexcom login and server (outside the US, US or Japan) |
+| **Nightscout** | Any CGM that feeds a Nightscout site: Dexcom, Libre via xDrip+ or Juggluco, Medtronic, Eversense… | The site address and, unless it is open, an **access token** (Admin tools → Subjects, role `readable`) or the API secret |
+| **LibreLinkUp** | FreeStyle Libre 2 / 3 with the LibreLink app | A **LibreLinkUp follower** account: the Libre user invites it from the LibreLink app (Connected apps → LibreLinkUp). The region is found automatically |
+
+Notes:
+- **Nightscout** is the safest choice if you already run it: it is your own server and an access
+  token can only read. The app accepts `https://` addresses only.
+- **LibreLinkUp** gives the latest reading every minute but history only every 15 minutes, so the
+  graph is a little coarser than with Dexcom. Open the LibreLinkUp app once with the follower
+  account to accept Abbott's terms, or the login is refused.
+- The login stays in memory between polls, so the app signs in once per session rather than every
+  5 minutes.
+- The bot reads the same three from `.env`: `DEXCOM_*`, `NIGHTSCOUT_URL` + `NIGHTSCOUT_SECRET`, or
+  `LIBRELINKUP_EMAIL` + `LIBRELINKUP_PASSWORD`.
+
 ## Units, limits and languages
 
 - **Units:** mmol/L or mg/dL. A new install picks the unit your country uses (mmol/L in the
   Nordics, UK, Ireland, the Netherlands, Canada, Australia and a few more; mg/dL elsewhere).
-  Everything is computed in mg/dL, which is what Dexcom sends; mmol/L is only for display.
+  Everything is computed in mg/dL, which is what all three sources send; mmol/L is only for display.
 - **Limits:** urgent low, target range and urgent high, plus the prediction window (5–60 min).
   Defaults: 3.0 / 3.9–10.0 / 14.0 mmol/L (54 / 70–180 / 252 mg/dL). The graph colours and its
   shaded band follow your target range. The app won't save limits that are out of order.
-- **Dexcom Share server:** outside the US (default), US, or Japan, which has its own server.
 - **Languages:** the app is in English, with Swedish if the phone is set to Swedish. The default
   warning texts follow the phone's language too, and stay neutral: they state the value and trend,
   never what to do about it. Write your own if you want more.
@@ -322,6 +342,7 @@ level, and writes the GIFs to `docs/graph/`.
 | `packs/` | ready-made face packs: `emoji/`, `pacman/`, `snobben/`, `mumin/` — pick via `FACE_PACK` |
 | `src/alerts.ts` | level + 20-min prediction (`assess`) that picks the expression |
 | `src/dexcom.ts` | Dexcom Share client (EU/US), session cache, least-squares trend |
+| `src/sources.ts` | Nightscout and LibreLinkUp clients for the bot (the app has `Nightscout.kt`, `LibreLinkUp.kt`) |
 | `src/hosting.ts` | write GIF to `./out` and build the public URL the mug downloads |
 | `src/glucoseBot.ts` | the Bubble bot: `/start`, refresh/temp/battery, 5-min push loop |
 | `src/render.ts` | (from main) still provides `assertMugGif` — the GIF constraint validator |
@@ -342,7 +363,7 @@ level, and writes the GIFs to `docs/graph/`.
 ## Security
 - No secrets in the repo: `.env` is gitignored; credentials come from env only.
 - The third-party SDK is fetched at setup time, not redistributed here.
-- The Android app keeps your Dexcom login and bot token in the app's private storage on the phone,
+- The Android app keeps your CGM login and bot token in the app's private storage on the phone,
   not encrypted. Encrypting them is on the to-do list.
 
 ## License
@@ -353,4 +374,4 @@ use on your own mug and are not covered by the MIT license; don't redistribute o
 
 ---
 Built for the PixelMug P1 and S1 Pro. A playful nod to the Anthrax "NOT-man", not affiliated with
-Anthrax, PixelMug / jeejio, or Dexcom. Not a medical device.
+Anthrax, PixelMug / jeejio, Dexcom, Abbott or the Nightscout project. Not a medical device.

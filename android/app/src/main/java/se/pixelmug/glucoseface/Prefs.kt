@@ -11,6 +11,28 @@ class Prefs(private val ctx: Context) {
         get() = sp.getString("token", "") ?: ""
         set(v) = sp.edit().putString("token", v).apply()
 
+    /** Where glucose comes from: Sources.DEXCOM | NIGHTSCOUT | LIBRE. */
+    var source: String
+        get() = sp.getString("source", Sources.DEXCOM) ?: Sources.DEXCOM
+        set(v) = sp.edit().putString("source", v).apply()
+
+    var nsUrl: String
+        get() = sp.getString("nsUrl", "") ?: ""
+        set(v) = sp.edit().putString("nsUrl", v).apply()
+
+    /** Nightscout access token or API secret (may be empty for an open site). */
+    var nsSecret: String
+        get() = sp.getString("nsSecret", "") ?: ""
+        set(v) = sp.edit().putString("nsSecret", v).apply()
+
+    var lluEmail: String
+        get() = sp.getString("lluEmail", "") ?: ""
+        set(v) = sp.edit().putString("lluEmail", v).apply()
+
+    var lluPass: String
+        get() = sp.getString("lluPass", "") ?: ""
+        set(v) = sp.edit().putString("lluPass", v).apply()
+
     var dexUser: String
         get() = sp.getString("dexUser", "") ?: ""
         set(v) = sp.edit().putString("dexUser", v).apply()

@@ -26,16 +26,37 @@
             android:paddingBottom="12dp" />
 
         <EditText android:id="@+id/token" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_token" android:inputType="text" android:autofillHints="password" />
-        <EditText android:id="@+id/dexUser" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_dex_user" android:inputType="text" android:autofillHints="username" />
-        <EditText android:id="@+id/dexPass" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_dex_pass" android:inputType="textPassword" android:autofillHints="password" />
         <EditText android:id="@+id/gifBase" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_gif_base" android:inputType="textUri" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_region" />
-        <RadioGroup android:id="@+id/region" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <RadioButton android:id="@+id/regionOus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_ous" android:checked="true" />
-            <RadioButton android:id="@+id/regionUs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_us" />
-            <RadioButton android:id="@+id/regionJp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_jp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_source" />
+        <RadioGroup android:id="@+id/source" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <RadioButton android:id="@+id/sourceDexcom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/source_dexcom" android:checked="true" />
+            <RadioButton android:id="@+id/sourceNightscout" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/source_nightscout" />
+            <RadioButton android:id="@+id/sourceLibre" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/source_libre" />
         </RadioGroup>
+
+        <LinearLayout android:id="@+id/boxDexcom" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <EditText android:id="@+id/dexUser" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_dex_user" android:inputType="text" android:autofillHints="username" />
+            <EditText android:id="@+id/dexPass" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_dex_pass" android:inputType="textPassword" android:autofillHints="password" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_region" />
+            <RadioGroup android:id="@+id/region" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <RadioButton android:id="@+id/regionOus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_ous" android:checked="true" />
+                <RadioButton android:id="@+id/regionUs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_us" />
+                <RadioButton android:id="@+id/regionJp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/region_jp" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/boxNightscout" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <EditText android:id="@+id/nsUrl" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_ns_url" android:inputType="textUri" android:importantForAutofill="no" />
+            <EditText android:id="@+id/nsSecret" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_ns_secret" android:inputType="textPassword" android:importantForAutofill="no" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/note_nightscout" android:textSize="13sp" android:alpha="0.7" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/boxLibre" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <EditText android:id="@+id/lluEmail" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_llu_email" android:inputType="textEmailAddress" android:autofillHints="emailAddress" />
+            <EditText android:id="@+id/lluPass" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_llu_pass" android:inputType="textPassword" android:autofillHints="password" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/note_libre" android:textSize="13sp" android:alpha="0.7" />
+        </LinearLayout>
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="@string/label_unit" />
         <RadioGroup android:id="@+id/unit" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">

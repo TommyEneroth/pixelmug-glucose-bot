@@ -2,9 +2,9 @@
  * glucoseBot.ts (face-emoji branch) — the Bubble bot that shows an animated
  * "NOT-man" face whose EXPRESSION is the blood glucose. No text, no graph.
  *
- *   bun run bot     (needs BOT_TOKEN + Dexcom creds + GIF_PUBLIC_BASE_URL in .env)
+ *   bun run bot     (needs BOT_TOKEN + Dexcom, Nightscout or LibreLinkUp + GIF_PUBLIC_BASE_URL in .env)
  *
- * Flow: every INTERVAL, fetch 6h of Dexcom Share -> assess the level -> render a
+ * Flow: every INTERVAL, fetch 6h of glucose -> assess the level -> render a
  * 32x16 animated face GIF -> publish it -> talPlayGif on the mug.
  *
  * NOTE: the SDK files under ./sdk are third-party (jeejio) and are fetched by
@@ -17,6 +17,7 @@ import PixelMug from "../sdk/DeviceSDK_PixelMug_0.1.ts";
 
 import { publishGif } from "./hosting";
 import { DexcomShare, type Reading } from "./dexcom";
+import { LibreLinkUp, Nightscout, type GlucoseSource } from "./sources";
 import { assess, DEFAULT_THRESHOLDS, type AlertThresholds } from "./alerts";
 import { expressionForLevel } from "./face";
 import { faceGif, faceSource } from "./facepack";
@@ -25,7 +26,12 @@ import { syntheticReadings } from "./synthetic";
 // ---------- config ----------
 const token = requireEnv("BOT_TOKEN");
 const intervalMs = Number(process.env.INTERVAL_MS ?? 5 * 60 * 1000);
-const useSynthetic = !process.env.DEXCOM_USERNAME; // fall back to fake data for demos
+// Glucose source: Nightscout if NIGHTSCOUT_URL is set, else LibreLinkUp if LIBRELINKUP_EMAIL,
+// else Dexcom if DEXCOM_USERNAME, else synthetic demo data.
+const sourceName = process.env.NIGHTSCOUT_URL ? "nightscout"
+  : process.env.LIBRELINKUP_EMAIL ? "librelinkup"
+  : process.env.DEXCOM_USERNAME ? "dexcom" : "synthetic";
+const useSynthetic = sourceName === "synthetic";
 
 const thresholds: AlertThresholds = {
   lowUrgent: Number(process.env.LOW_URGENT ?? DEFAULT_THRESHOLDS.lowUrgent),
@@ -33,13 +39,15 @@ const thresholds: AlertThresholds = {
   predWindowMin: Number(process.env.PRED_WINDOW_MIN ?? DEFAULT_THRESHOLDS.predWindowMin),
 };
 
-const dex = useSynthetic
-  ? null
-  : new DexcomShare({
+const glucose: GlucoseSource | null =
+  sourceName === "nightscout" ? new Nightscout(process.env.NIGHTSCOUT_URL!, process.env.NIGHTSCOUT_SECRET ?? "")
+  : sourceName === "librelinkup" ? new LibreLinkUp(process.env.LIBRELINKUP_EMAIL!, requireEnv("LIBRELINKUP_PASSWORD"))
+  : sourceName === "dexcom" ? new DexcomShare({
       username: process.env.DEXCOM_USERNAME!,
       password: requireEnv("DEXCOM_PASSWORD"),
       region: (process.env.DEXCOM_REGION as any) ?? "eu",
-    });
+    })
+  : null;
 
 // ---------- runtime state ----------
 let activeChat: any = null; // where to push proactive updates (set on /start)
@@ -54,7 +62,7 @@ bot.setMyCommands([{ command: "start", description: "Start the glucose face" }])
 
 async function fetchReadings(): Promise<Reading[]> {
   if (useSynthetic) return syntheticReadings("calm");
-  return dex!.fetchSeries(6);
+  return glucose!.fetchSeries(6);
 }
 
 /** Push a GIF to the mug via talPlayGif. Returns the hosted url, or null if unhosted. */
@@ -155,7 +163,7 @@ bot.on(async (ctx: any) => {
 
 bot.start();
 console.log(
-  `glucose-face bot running. interval=${intervalMs}ms, data=${useSynthetic ? "synthetic" : "dexcom"}, ` +
+  `glucose-face bot running. interval=${intervalMs}ms, data=${sourceName}, ` +
     `faces=${process.env.FACE_PACK ? `pack:${process.env.FACE_PACK}` : "built-in"}.`,
 );
 

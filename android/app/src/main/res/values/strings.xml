@@ -80,7 +80,7 @@
     <string name="st_connect_first">Connect the mug first.</string>
     <string name="st_empty_template">Empty template.</string>
     <string name="st_sent_text">Sent text: \"%1$s\"</string>
-    <string name="st_fill_dexcom">Enter your Dexcom login first.</string>
+    <string name="st_fill_source">Set up where the glucose comes from first (Dexcom, Nightscout or LibreLinkUp).</string>
     <string name="st_upload_failed">Upload failed: %1$s</string>
     <string name="st_sent_graph">Graph + text (%1$d B) uploaded and sent</string>
     <string name="st_gif_missing">GIF missing: %1$s</string>
@@ -95,9 +95,22 @@
     <string name="svc_starting">Starting…</string>
     <string name="svc_no_token">Bot token missing.</string>
     <string name="svc_not_connected">Mug not connected. Tap Connect mug.</string>
-    <string name="svc_no_dexcom">Dexcom login missing.</string>
+    <string name="svc_no_source">Glucose source not set up.</string>
     <string name="svc_empty_skip">%1$s %2$s (%3$s): empty template, skipping.</string>
     <string name="svc_text_sent">%1$s: \"%2$s\" sent as text</string>
     <string name="svc_graph_sent">%1$s %2$s (%3$s): graph sent</string>
     <string name="svc_face_sent">%1$s %2$s (%3$s) → %4$s</string>
+
+    <!-- glucose sources -->
+    <string name="label_source">Glucose from:</string>
+    <string name="source_dexcom">Dexcom</string>
+    <string name="source_nightscout">Nightscout</string>
+    <string name="source_libre">LibreLinkUp</string>
+    <string name="hint_ns_url">Nightscout address (https://…)</string>
+    <string name="hint_ns_secret">Token or API secret (optional)</string>
+    <string name="note_nightscout">Works with any CGM that feeds Nightscout. Best: an access token with the readable role, made under Admin tools.</string>
+    <string name="hint_llu_email">LibreLinkUp email</string>
+    <string name="hint_llu_pass">LibreLinkUp password</string>
+    <string name="note_libre">FreeStyle Libre: use a LibreLinkUp follower account that the Libre user has invited from the LibreLink app. The region is found automatically.</string>
+    <string name="st_bad_ns_url">The Nightscout address must start with https://</string>
 </resources>

@@ -7,7 +7,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** A glucose reading in mg/dL, as Dexcom sends it. */
+/** A glucose reading in mg/dL (what Dexcom, Nightscout and LibreLinkUp all send). */
 data class Reading(val mgdl: Double, val ts: Long)
 
 /**
@@ -17,7 +17,7 @@ data class Reading(val mgdl: Double, val ts: Long)
  * region: "eu" = outside the US (shareous1), "us" = US (share2), "jp" = Japan,
  * which has its own server and application id (same values as pydexcom).
  */
-class Dexcom(private val user: String, private val pass: String, region: String = "eu") {
+class Dexcom(private val user: String, private val pass: String, region: String = "eu") : GlucoseSource {
     private val base = when (region) {
         "us" -> "https://share2.dexcom.com/ShareWebServices/Services"
         "jp" -> "https://share.dexcom.jp/ShareWebServices/Services"
@@ -59,7 +59,8 @@ class Dexcom(private val user: String, private val pass: String, region: String 
     }
 
     /** Last `hours` of readings, oldest first. Retries once with a fresh session. */
-    fun fetchSeries(hours: Int = 3): List<Reading> {
+    @Synchronized
+    override fun fetchSeries(hours: Int): List<Reading> {
         val minutes = hours * 60
         val maxCount = (minutes / 5) + 2
         var raw = readRaw(minutes, maxCount)
