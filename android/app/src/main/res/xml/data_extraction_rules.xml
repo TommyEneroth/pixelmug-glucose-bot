@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The settings hold the Dexcom login and the bot token: keep them out of cloud
+     backups and device-to-device transfers (Android 12+). -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="glucoseface.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="glucoseface.xml" />
+    </device-transfer>
+</data-extraction-rules>

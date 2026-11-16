@@ -236,11 +236,31 @@ It needs Python 3 with Pillow and numpy. For the white P1 there is `scripts/mug_
 Every 5 min it fetches Dexcom, picks the expression, and pushes the matching pack GIF to the mug
 via the Bubble bot API (a foreground service).
 
+**Install:** download `PixelMugGlucoseFace-<version>.apk` from the
+[latest release](https://github.com/TommyEneroth/pixelmug-glucose-bot/releases/latest), open it on
+the phone and allow installs from your browser or file manager when Android asks. Android 8 or newer.
+
+Every release is signed with the same key, so updates install over the old version and keep your
+settings. To check that an APK is genuine, compare its signing certificate with:
+
+```
+SHA-256  31:3B:B6:4B:ED:4E:8F:64:02:C5:74:56:A5:2F:11:8F:B7:F2:60:6C:59:CE:32:D2:78:B4:F2:13:70:84:1C:7A
+```
+
+(`apksigner verify --print-certs PixelMugGlucoseFace-*.apk`, or apps like AppVerifier.) Your
+settings, including the Dexcom login, are kept out of Android's cloud backup and device transfer.
+
+**Build it yourself** instead:
+
 ```bash
 cd android
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+The debug build installs next to the release one (`.debug` suffix). For signed release builds,
+put a `keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`) in `android/`
+and run `./gradlew :app:assembleRelease`; see `scripts/release.sh`.
 
 In the app: enter your **bot token** and **Dexcom** login, pick your **Dexcom Share server**,
 **units** and **limits**, tap **Connect mug** (open the Bubble app and send `/start` so it can

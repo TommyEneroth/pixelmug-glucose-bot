@@ -26,3 +26,8 @@ android/.kotlin/
 # misc
 .DS_Store
 *.log
+
+# release signing (the key lives in ~/.android/keystores, never in git)
+android/keystore.properties
+*.jks
+*.keystore
