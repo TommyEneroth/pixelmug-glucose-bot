@@ -2,7 +2,7 @@ package se.pixelmug.glucoseface
 
 /**
  * Render 6h of glucose as a 32x16 VU-meter GIF (dark background, coloured bars,
- * current value top-left). Values are mg/dL; colours and the shaded band follow
+ * current value top-centre). Values are mg/dL; colours and the shaded band follow
  * the user's target range, the number follows their unit.
  */
 object GraphRender {
@@ -59,6 +59,9 @@ object GraphRender {
         return out
     }
 
+    private fun textWidth(s: String): Int =
+        s.sumOf { (FONT[it]?.get(0)?.length ?: 3) + 1 } - if (s.isEmpty()) 0 else 1
+
     private fun drawText(f: ByteArray, x: Int, y: Int, s: String, idx: Int) {
         var cx = x
         for (ch in s) {
@@ -92,7 +95,8 @@ object GraphRender {
             val cur = if (readings.isEmpty()) Double.NaN else readings.last().mgdl
             val txt = if (cur.isNaN() || cur <= 0) "--" else Units.format(cur, unit)
             val col = if (stale) 9 else if (cur.isNaN() || cur <= 0) 8 else when (zone(cur, lim)) { "low" -> 2; "high" -> 6; else -> 8 }
-            drawText(f, 1, 1, txt, col)
+            // centred: the S1 Pro wraps ~185° round the mug, so the outer columns face sideways
+            drawText(f, (W - textWidth(txt)) / 2, 1, txt, col)
         }
         return f
     }

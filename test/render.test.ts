@@ -106,6 +106,18 @@ describe("frame semantics", () => {
     expect(has(high, INDEX.low)).toBe(false);
   });
 
+  test("value number sits in the middle, away from the curved edges", () => {
+    for (const v of [6.5, 15.6, 12]) {
+      const f = renderFrameIndexed([], { showValue: true, currentMmol: v, ageMin: 2, band: false }, true);
+      const xs: number[] = [];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (f[y * W + x] !== INDEX.bg) xs.push(x);
+      const lo = Math.min(...xs), hi = Math.max(...xs);
+      expect(lo).toBeGreaterThanOrEqual(5); // outer ~5 columns face sideways on the S1 Pro
+      expect(hi).toBeLessThanOrEqual(W - 6);
+      expect(Math.abs(lo + hi - (W - 1))).toBeLessThanOrEqual(1);
+    }
+  });
+
   test("unknown value (0) prints '--' (white)", () => {
     const f = renderFrameIndexed([], { showValue: true, currentMmol: 0, band: false }, true);
     expect(has(f, INDEX.white)).toBe(true);

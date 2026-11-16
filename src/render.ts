@@ -184,7 +184,7 @@ export type RenderOpts = {
   ageMin?: number;
   /** Force a low-alarm blink even if not computed from data. */
   blinkLow?: boolean;
-  /** Show the current value as a number, top-left (default true). */
+  /** Show the current value as a number, top-centre (default true). */
   showValue?: boolean;
   /** The exact current value to print (defaults to the last binned column). */
   currentMmol?: number;
@@ -249,8 +249,10 @@ function buildFrame(cols: number[], o: RenderOpts, nowLit: boolean): Uint8Array 
     if (stale && o.showValue === false) f[0 * W + 0] = I.gray;
   }
 
-  // Current value as a number, top-left, drawn straight over the graph (no
-  // backing) so the curve stays visible behind it. Colour signals the zone:
+  // Current value as a number, top-centre, drawn straight over the graph (no
+  // backing) so the curve stays visible behind it. Centred, not at the left edge:
+  // the S1 Pro wraps the display ~185° round the mug, so the outer columns face
+  // sideways and a number there is squashed and half hidden from the front. Colour signals the zone:
   // red = low, yellow = high, white = in range; gray = stale.
   if (o.showValue !== false) {
     const v = o.currentMmol ?? cols[W - 1];
@@ -263,7 +265,8 @@ function buildFrame(cols: number[], o: RenderOpts, nowLit: boolean): Uint8Array 
           : zone(v) === "high"
             ? I.high
             : I.white;
-    drawText(f, 1, 1, fmtValue(v), numCol);
+    const txt = fmtValue(v);
+    drawText(f, Math.floor((W - textWidth(txt)) / 2), 1, txt, numCol);
   }
   return f;
 }
