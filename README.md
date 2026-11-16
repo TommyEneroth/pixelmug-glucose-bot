@@ -253,6 +253,19 @@ Three **modes**:
 - **Graph**: the phone renders the 32×16 VU-meter GIF itself (`Gif.kt` + `GraphRender.kt`) and
   uploads each frame to litterbox for the mug to fetch. Warnings scroll over the graph.
 
+<p align="center">
+  <img src="docs/mug/graph.webp" width="420" alt="Graph mode in mmol/L on the black S1 Pro, through six example days">
+  <img src="docs/mug/graph_mgdl.webp" width="420" alt="Graph mode in mg/dL on the black S1 Pro, through six example days">
+  <br><em>Graph mode on the S1 Pro in mmol/L and mg/dL. Each bar is 11 minutes, 6 hours in all,
+  newest on the right; the green band is your target range. A calm day shows the current value in
+  the corner. Heading for a low or a high, or already there, a warning scrolls across the graph
+  in red or amber. A reading more than 16 minutes old turns the newest bar and the number grey.</em>
+</p>
+
+These are real outputs of the app's renderer: `GraphExamplesTest` runs six example days through
+`Alerts.assess` → the default warning texts → `GraphRender`, checks each one lands on the right
+level, and writes the GIFs to `docs/graph/`.
+
 > [!CAUTION]
 > Graph mode uploads a picture of your glucose graph to a **public, anonymous** file host
 > (litterbox.catbox.moe) every five minutes; each picture is kept for an hour. Face and Text modes

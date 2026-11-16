@@ -12,6 +12,8 @@ Output by extension: .webp (animated, full colour — what the README uses), .gi
 Usage
   python3 scripts/mug_s1.py packs/weather-dark docs/mug/weather.webp
       a pack folder: cycles the six glucose states, with a label row underneath
+  python3 scripts/mug_s1.py docs/graph/mmol docs/mug/graph.webp
+      any folder with happy/worried/panic/queasy/sick/sleep.gif works the same way
   python3 scripts/mug_s1.py packs/extras/hyperspace.gif docs/mug/hyperspace.webp
       one GIF: plays it on the mug
   python3 scripts/mug_s1.py packs/notman-dark/happy.gif docs/mug/face_happy.webp --closeup
@@ -316,6 +318,8 @@ def state_frames(pack):
         if not os.path.exists(p):
             continue
         fr, du = read_gif(p)
+        if len(fr) == 1:                  # a still (e.g. a plain graph): hold it
+            du = [2200]
         loops = max(1, round(2200 / sum(du)))
         seq.append((s, fr * loops, du * loops))
     return seq
