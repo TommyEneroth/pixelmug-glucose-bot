@@ -113,4 +113,25 @@
     <string name="hint_llu_pass">LibreLinkUp password</string>
     <string name="note_libre">FreeStyle Libre: use a LibreLinkUp follower account that the Libre user has invited from the LibreLink app. The region is found automatically.</string>
     <string name="st_bad_ns_url">The Nightscout address must start with https://</string>
+
+    <!-- demo mode -->
+    <string name="label_demo">Demo mode (for filming)</string>
+    <string name="note_demo">Steps the mug through a scripted scene with made-up values: happy, worried, panic, a LOW SOON warning, back in range, happy. Live updates stop while you film; tap Start afterwards to show your real glucose again.</string>
+    <string name="demo_idle">Not started</string>
+    <string name="demo_step">Step %1$d/%2$d: %3$s</string>
+    <string name="demo_step_happy">Happy</string>
+    <string name="demo_step_worried">Worried</string>
+    <string name="demo_step_panic">Panic</string>
+    <string name="demo_step_warning">Warning: low soon</string>
+    <string name="demo_step_recovered">Graph back in range</string>
+    <string name="demo_step_happy_again">Happy again</string>
+    <string name="btn_demo_prev">◀ Back</string>
+    <string name="btn_demo_next">Next ▶</string>
+    <string name="label_demo_secs">Seconds per step</string>
+    <string name="btn_demo_auto">Play all</string>
+    <string name="btn_demo_auto_stop">Stop</string>
+    <string name="btn_demo_end">End demo</string>
+    <string name="st_demo_preparing">Preparing the demo (fetching faces, uploading graphs)…</string>
+    <string name="st_demo_ready">Demo ready. The mug follows the steps.</string>
+    <string name="st_demo_ended">Demo ended. Tap Start to show your real glucose again.</string>
 </resources>

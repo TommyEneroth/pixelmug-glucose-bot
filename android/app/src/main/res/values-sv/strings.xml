@@ -102,4 +102,25 @@
     <string name="hint_llu_pass">LibreLinkUp-lösenord</string>
     <string name="note_libre">FreeStyle Libre: logga in med ett LibreLinkUp-följarkonto som Libre-användaren har bjudit in från LibreLink-appen. Regionen hittas automatiskt.</string>
     <string name="st_bad_ns_url">Nightscout-adressen måste börja med https://</string>
+
+    <!-- demoläge -->
+    <string name="label_demo">Demoläge (för filmning)</string>
+    <string name="note_demo">Stegar muggen genom en färdig scen med påhittade värden: glad, orolig, panik, en LÅGT SNART-varning, tillbaka i målområdet, glad. Den vanliga uppdateringen stoppas medan du filmar; tryck Starta efteråt för att visa riktiga värden igen.</string>
+    <string name="demo_idle">Inte startad</string>
+    <string name="demo_step">Steg %1$d/%2$d: %3$s</string>
+    <string name="demo_step_happy">Glad</string>
+    <string name="demo_step_worried">Orolig</string>
+    <string name="demo_step_panic">Panik</string>
+    <string name="demo_step_warning">Varning: lågt snart</string>
+    <string name="demo_step_recovered">Grafen åter i målområdet</string>
+    <string name="demo_step_happy_again">Glad igen</string>
+    <string name="btn_demo_prev">◀ Bakåt</string>
+    <string name="btn_demo_next">Nästa ▶</string>
+    <string name="label_demo_secs">Sekunder per steg</string>
+    <string name="btn_demo_auto">Spela upp allt</string>
+    <string name="btn_demo_auto_stop">Stoppa</string>
+    <string name="btn_demo_end">Avsluta demo</string>
+    <string name="st_demo_preparing">Förbereder demon (hämtar ansikten, laddar upp grafer)…</string>
+    <string name="st_demo_ready">Demon är redo. Muggen följer stegen.</string>
+    <string name="st_demo_ended">Demon avslutad. Tryck Starta för att visa riktiga värden igen.</string>
 </resources>

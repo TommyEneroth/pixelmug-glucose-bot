@@ -9,6 +9,8 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
@@ -264,6 +266,100 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btnHyper).setOnClickListener { pushExtra("hyperspace.gif", getString(R.string.btn_hyper)) }
         findViewById<Button>(R.id.btnNotes).setOnClickListener { pushExtra("notes.gif", getString(R.string.btn_notes)) }
+
+        // ---- demo mode: a scripted scene for filming, made-up values, never real data ----
+        val demoStep = findViewById<TextView>(R.id.demoStep)
+        val demoSecs = findViewById<EditText>(R.id.demoSecs)
+        val btnDemoAuto = findViewById<Button>(R.id.btnDemoAuto)
+        val demoLock = Mutex()
+        val demoCache = HashMap<Int, Pair<String, Long>>() // step -> (url, size)
+        var demoPreparedAt = 0L
+        var demoIndex = -1
+        var demoAuto: Job? = null
+
+        /** Fetch face sizes and upload the two graphs once, so each step reaches the mug at once. */
+        fun prepareDemo(bot: BubbleBot): String? {
+            val now = System.currentTimeMillis()
+            demoCache.clear()
+            Demo.STEPS.forEachIndexed { i, st ->
+                demoCache[i] = when (st.kind) {
+                    Demo.Kind.FACE -> {
+                        val url = prefs.gifUrl(st.expr)
+                        val size = bot.gifSize(url)
+                        if (size <= 0L) return getString(R.string.st_gif_missing, url)
+                        url to size
+                    }
+                    else -> {
+                        val gif = if (st.kind == Demo.Kind.WARNING_GRAPH)
+                            Demo.warningGif(prefs.tplPredLow, prefs.unit, prefs.limits, now)
+                        else Demo.recoveredGif(prefs.unit, prefs.limits, now)
+                        val url = bot.uploadCatbox(gif)
+                        if (!url.startsWith("http")) return getString(R.string.st_upload_failed, url.take(60))
+                        url to gif.size.toLong()
+                    }
+                }
+            }
+            demoPreparedAt = now
+            return null
+        }
+
+        /** Show step i on the mug. Returns false if it failed (the status says why). */
+        suspend fun demoGoTo(i: Int): Boolean = demoLock.withLock {
+            save()?.let { status.text = it; return@withLock false }
+            if (prefs.chat.isBlank()) { status.text = getString(R.string.st_connect_first); return@withLock false }
+            // live updates would overwrite the scene within 5 minutes
+            stopService(Intent(this@MainActivity, FaceService::class.java))
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            val err = withContext(Dispatchers.IO) {
+                try {
+                    val bot = BubbleBot(prefs.token)
+                    // litterbox links last an hour; renew well before that
+                    if (demoCache.size < Demo.STEPS.size || System.currentTimeMillis() - demoPreparedAt > 45 * 60_000L) {
+                        withContext(Dispatchers.Main) { status.text = getString(R.string.st_demo_preparing) }
+                        prepareDemo(bot)?.let { return@withContext it }
+                        withContext(Dispatchers.Main) { status.text = getString(R.string.st_demo_ready) }
+                    }
+                    val (url, size) = demoCache.getValue(i)
+                    bot.pushGif(JSONObject(prefs.chat), url, size)
+                    null
+                } catch (e: Exception) { getString(R.string.st_error, e.message) }
+            }
+            if (err != null) { status.text = err; return@withLock false }
+            demoIndex = i
+            demoStep.text = getString(R.string.demo_step, i + 1, Demo.STEPS.size, getString(Demo.STEPS[i].label))
+            true
+        }
+
+        fun stopDemoAuto() { demoAuto?.cancel(); demoAuto = null; btnDemoAuto.setText(R.string.btn_demo_auto) }
+
+        findViewById<Button>(R.id.btnDemoNext).setOnClickListener {
+            stopDemoAuto()
+            scope.launch { demoGoTo((demoIndex + 1).coerceAtMost(Demo.STEPS.size - 1)) }
+        }
+        findViewById<Button>(R.id.btnDemoPrev).setOnClickListener {
+            stopDemoAuto()
+            scope.launch { demoGoTo((demoIndex - 1).coerceAtLeast(0)) }
+        }
+        btnDemoAuto.setOnClickListener {
+            if (demoAuto != null) { stopDemoAuto(); return@setOnClickListener }
+            val secs = (demoSecs.text.toString().toIntOrNull() ?: 8).coerceIn(2, 120)
+            btnDemoAuto.setText(R.string.btn_demo_auto_stop)
+            demoAuto = scope.launch {
+                for (i in Demo.STEPS.indices) {
+                    if (!demoGoTo(i)) break
+                    if (i < Demo.STEPS.size - 1) delay(secs * 1000L)
+                }
+                demoAuto = null
+                btnDemoAuto.setText(R.string.btn_demo_auto)
+            }
+        }
+        findViewById<Button>(R.id.btnDemoEnd).setOnClickListener {
+            stopDemoAuto()
+            demoIndex = -1
+            demoStep.setText(R.string.demo_idle)
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            status.text = getString(R.string.st_demo_ended)
+        }
 
         findViewById<Button>(R.id.btnStart).setOnClickListener {
             save()?.let { status.text = it; return@setOnClickListener }

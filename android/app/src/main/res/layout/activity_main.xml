@@ -146,6 +146,20 @@
         <Button android:id="@+id/btnStart" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_start" />
         <Button android:id="@+id/btnStop" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_stop" />
 
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="20dp" android:text="@string/label_demo" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/note_demo" android:textSize="13sp" android:alpha="0.7" />
+        <TextView android:id="@+id/demoStep" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:text="@string/demo_idle" android:textSize="16sp" android:textStyle="bold" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <Button android:id="@+id/btnDemoPrev" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/btn_demo_prev" />
+            <Button android:id="@+id/btnDemoNext" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2" android:text="@string/btn_demo_next" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/label_demo_secs" />
+            <EditText android:id="@+id/demoSecs" android:layout_width="64dp" android:layout_height="wrap_content" android:inputType="number" android:text="8" android:importantForAutofill="no" />
+            <Button android:id="@+id/btnDemoAuto" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/btn_demo_auto" />
+        </LinearLayout>
+        <Button android:id="@+id/btnDemoEnd" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/btn_demo_end" />
+
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="16dp" android:text="@string/status_ready" android:textIsSelectable="true" />
     </LinearLayout>
 </ScrollView>

@@ -297,6 +297,15 @@ level, and writes the GIFs to `docs/graph/`.
 > The default is this repo through jsDelivr (`https://cdn.jsdelivr.net/gh/TommyEneroth/pixelmug-glucose-bot@main`);
 > point it at your own fork or any static host to serve your own packs.
 
+### Demo mode (for filming)
+
+At the bottom of the app, **Demo mode** steps the mug through a scripted scene with made-up
+values, for videos and show-and-tell: happy → worried → panic → a "LOW SOON 4.2 ↘ ~3.1 IN 20 MIN"
+warning over the graph → the graph back in range → happy. Tap **Next ▶** / **◀ Back**, or
+**Play all** with your own seconds per step. It stops the live updates while it runs and keeps
+the screen on; tap **Start** afterwards to go back to your real glucose. The texts and units are
+your own settings.
+
 ## Glucose sources
 
 | Source | For | What you enter |
