@@ -14,21 +14,21 @@ your phone and talks to the mug through a [Bubble](https://github.com/bubble-im)
 of the world, and an app in English and Swedish. See [Units, limits and languages](#units-limits-and-languages).
 
 <p align="center">
-  <img src="docs/face_overview.png" width="640" alt="The six glucose faces"><br>
-  <em>The built-in faces (upscaled — the mug renders the real 32×16 on light ceramic). The head
-  fills the canvas, with a dark outline, shaded skin tones and an animated mouth per mood.</em>
+  <img src="docs/mug/notman.webp" width="560" alt="The built-in face on a black PixelMug S1 Pro, cycling through the six glucose states"><br>
+  <em>The built-in face on the black PixelMug S1 Pro, cycling through the six glucose states.
+  Mockup rendered from the real 32×16 GIFs with <code>scripts/mug_s1.py</code>.</em>
 </p>
 
 ## What the face means
 
 | | Face | Shown when | Animation |
 |---|---|---|---|
-| <img src="docs/face_happy.gif" width="120"> | **happy** | glucose **between the urgent limits** and no warning | talks (grin opens/closes), blinks, pink cheeks |
-| <img src="docs/face_worried.gif" width="120"> | **worried** | **falling** — 20-min projection **≤ 3** | pale, brows up, frown quivers, sweat drips down |
-| <img src="docs/face_panic.gif" width="120"> | **panic** | **low, ≤ 3.0** | pale, wide eyes, red mouth screams (pulses), sweats & shakes |
-| <img src="docs/face_queasy.gif" width="120"> | **queasy** | **rising** — 20-min projection **≥ 14** | green, woozy eyes, wavy mouth ripples |
-| <img src="docs/face_sick.gif" width="120"> | **sick** | **high, ≥ 14.0** | green, X eyes, tongue lolls in and out |
-| <img src="docs/face_sleep.gif" width="120"> | **sleep** | reading **stale (> 16 min)** or no data | eyes closed, breathing, a snore bubble — never a "healthy" face on data it can't trust |
+| <img src="docs/mug/face_happy.webp" width="150"> | **happy** | glucose **between the urgent limits** and no warning | talks (grin opens/closes), blinks, pink cheeks |
+| <img src="docs/mug/face_worried.webp" width="150"> | **worried** | **falling** — 20-min projection **≤ 3** | pale, brows up, frown quivers, sweat drips down |
+| <img src="docs/mug/face_panic.webp" width="150"> | **panic** | **low, ≤ 3.0** | pale, wide eyes, red mouth screams (pulses), sweats & shakes |
+| <img src="docs/mug/face_queasy.webp" width="150"> | **queasy** | **rising** — 20-min projection **≥ 14** | green, woozy eyes, wavy mouth ripples |
+| <img src="docs/mug/face_sick.webp" width="150"> | **sick** | **high, ≥ 14.0** | green, X eyes, tongue lolls in and out |
+| <img src="docs/mug/face_sleep.webp" width="150"> | **sleep** | reading **stale (> 16 min)** or no data | eyes closed, breathing, a snore bubble — never a "healthy" face on data it can't trust |
 
 Skin colour is itself a signal: **tan = fine, pale = low, green = high**. The numbers above are
 the defaults in mmol/L (54 and 252 mg/dL); the app lets you set your own urgent limits and
@@ -115,9 +115,10 @@ Good to know:
 ### Included packs
 
 Twelve ready-made packs ship in `packs/` — seven ambient scenes and five characters, each in a light
-(P1) and a dark (S1 Pro) variant. All read the same six glucose states:
+(P1) and a dark (S1 Pro) variant. All read the same six glucose states. Every preview below is the
+dark variant on the black S1 Pro, cycling through the states in the label row:
 
-<p align="center"><img src="docs/all_packs_overview.png" width="760" alt="All twelve PixelMug glucose packs across the six states"></p>
+<p align="center"><img src="docs/all_packs_overview.png" width="760" alt="All twelve PixelMug glucose packs across the six states, on the black S1 Pro"></p>
 
 Point `FACE_PACK` at one (flag or `.env`):
 
@@ -127,20 +128,20 @@ FACE_PACK=packs/weather bun run bot   # or fire, aqua, lava, matrix, space, synt
 
 **Emoji** 🙂 — `packs/emoji` — the colour reinforces the level (yellow → green when high).
 
-<p align="center"><img src="docs/emoji_overview.png" width="600" alt="Emoji face pack"></p>
+<p align="center"><img src="docs/mug/emoji.webp" width="480" alt="Emoji face pack, on the black S1 Pro"></p>
 
 **Pac-Man** 🟡 — `packs/pacman` — chomps pellets in range; a ghost closes in when you go low.
 
-<p align="center"><img src="docs/pacman_overview.png" width="600" alt="Pac-Man face pack"></p>
+<p align="center"><img src="docs/mug/pacman.webp" width="480" alt="Pac-Man face pack, on the black S1 Pro"></p>
 
 **Snobben** 🐶 — `packs/snobben` — a Snoopy-style beagle with the floppy ear.
 
-<p align="center"><img src="docs/snobben_overview.png" width="600" alt="Snobben (beagle) face pack"></p>
+<p align="center"><img src="docs/mug/snobben.webp" width="480" alt="Snobben (beagle) face pack, on the black S1 Pro"></p>
 
 **Mumin** — `packs/mumin` — a Moomin *variety* pack: a different character per mood
 (Moomintroll / Sniff / Little My / Hemulen / the Groke / Snufkin).
 
-<p align="center"><img src="docs/mumin_overview.png" width="600" alt="Moomin face pack"></p>
+<p align="center"><img src="docs/mug/mumin.webp" width="480" alt="Moomin face pack, on the black S1 Pro"></p>
 
 **Väder — himmelen ÄR ditt glukos** 🌤️ — `packs/weather` — an ambient sky you can read across the
 room, no numbers: ☀️ sun in range, 🌥️ clouds drift in as you fall, ⛈️ thunder + lightning when
@@ -148,7 +149,7 @@ you're low, ☁️ a churning grey lid as you climb, 🌨️ snowfall when you'r
 when the reading is stale. Six frames each for smooth motion. Generate with `bun run gen-weather`
 (and `THEME=dark bun run gen-weather` for the black S1 Pro).
 
-<p align="center"><img src="docs/weather_overview.png" width="600" alt="Weather pack — the sky is your glucose"></p>
+<p align="center"><img src="docs/mug/weather.webp" width="480" alt="Weather pack — the sky is your glucose, on the black S1 Pro"></p>
 
 **Lägereld — lågan ÄR ditt glukos** 🔥 — `packs/fire` — a campfire that breathes calmly in range,
 🔥 grows and turns orange as you climb, 🔥🔥 roars into a spark-throwing blaze when you're high,
@@ -156,7 +157,7 @@ when the reading is stale. Six frames each for smooth motion. Generate with `bun
 and 🪵 goes to a cold hearth with one last coal when the reading is stale. Real flicker, six frames.
 Generate with `bun run gen-fire` (and `THEME=dark bun run gen-fire` for the black S1 Pro).
 
-<p align="center"><img src="docs/fire_overview.png" width="600" alt="Campfire pack — the flame is your glucose"></p>
+<p align="center"><img src="docs/mug/fire.webp" width="480" alt="Campfire pack — the flame is your glucose, on the black S1 Pro"></p>
 
 **Akvarium — fisken ÄR ditt glukos** 🐟 — `packs/aqua` — a goldfish drifting calmly to and fro in
 range, 🐟 sinking as you fall, 🐟 climbing toward the surface as you rise, 🐟 gasping in a murky warm
@@ -164,53 +165,70 @@ tank when you're high, darting a frantic red along the bottom when you're low, a
 sand when the reading is stale. Swaying weeds, rising bubbles, six frames each. Generate with
 `bun run gen-aqua` (and `THEME=dark bun run gen-aqua` for the black S1 Pro).
 
-<p align="center"><img src="docs/aqua_overview.png" width="600" alt="Aquarium pack — the fish is your glucose"></p>
+<p align="center"><img src="docs/mug/aqua.webp" width="480" alt="Aquarium pack — the fish is your glucose, on the black S1 Pro"></p>
 
 **Lavalampa** 🌋 — `packs/lava` — molten metaball blobs: green bob in range, sink and cool to blue as
 you fall/are low, boil red-hot up top when you're high. Colour + height + motion all track glucose.
 
-<p align="center"><img src="docs/lava_overview.png" width="600" alt="Lava-lamp pack"></p>
+<p align="center"><img src="docs/mug/lava.webp" width="480" alt="Lava-lamp pack, on the black S1 Pro"></p>
 
 **Matrix** 🟩 — `packs/matrix` — digital rain: green and steady in range, blue and glitchy when low,
 amber climbing, red and racing when high, a dim idle drizzle when stale.
 
-<p align="center"><img src="docs/matrix_overview.png" width="600" alt="Matrix rain pack"></p>
+<p align="center"><img src="docs/mug/matrix.webp" width="480" alt="Matrix rain pack, on the black S1 Pro"></p>
 
 **Rymd** 🌌 — `packs/space` — a starfield past a little ringed planet: stars drift up as you rise,
 down as you fall, gently twinkle in range, blaze into a red warp when high / cold-blue warp when low.
 
-<p align="center"><img src="docs/space_overview.png" width="600" alt="Starfield pack"></p>
+<p align="center"><img src="docs/mug/space.webp" width="480" alt="Starfield pack, on the black S1 Pro"></p>
 
 **Synthwave** 🌇 — `packs/synth` — a retro sun over a neon perspective grid: it rides high and hot-red
 when you're high, sits mid and warm in range, sinks and cools as you fall/are low, night when stale.
 
-<p align="center"><img src="docs/synth_overview.png" width="600" alt="Synthwave sun pack"></p>
+<p align="center"><img src="docs/mug/synth.webp" width="480" alt="Synthwave sun pack, on the black S1 Pro"></p>
 
 Each is generated by its script (`bun run gen-emoji` / `gen-pacman` / `gen-snobben` / `gen-weather` / `gen-fire` / `gen-aqua` / `gen-lava` / `gen-matrix` / `gen-space` / `gen-synth`) — edit the
 matching `src/gen-*.ts` to tweak. Original pixel art — playful homages, not the real characters;
 for personal use on your own mug.
 
-### Designing for the LED — and previewing on the mug
+### Extras
 
-The mug shows the pixels you send, on **light ceramic**. So design on a **light background**
-(index 0 = a ceramic tone), and make figures read against it:
-
-- A **white/pale shape needs a dark outline** or it disappears into the ceramic — Snobben has a
-  black outline plus a black ear and nose.
-- **Black and bright saturated colours** (yellow, green, red) read well on the light ceramic;
-  pale/light colours wash out.
-
-Preview any pack GIF as it'll look on the device — the mockup is an **animated GIF** of the mug
-playing the animation:
-
-```bash
-python3 scripts/mug_mockup.py packs/snobben/happy.gif docs/mug.gif
-```
+Two showpiece GIFs that aren't tied to glucose. The app has a button for each, and they live in
+`packs/extras/`:
 
 <p align="center">
-  <img src="docs/mug_snobben_happy.gif" width="360" alt="Snobben on the mug">
-  <img src="docs/mug_pacman_happy.gif" width="360" alt="Pac-Man on the mug">
+  <img src="docs/mug/hyperspace.webp" width="380" alt="Hyperspace jump seen from a starship cockpit, on the black S1 Pro">
+  <img src="docs/mug/notes.webp" width="380" alt="Notes dancing on a scrolling staff with a bass clef, on the black S1 Pro">
+  <br><em><b>Hyperrymd</b>: the jump to lightspeed, seen from the cockpit (<code>src/gen-hyperspace.ts</code>) ·
+  <b>Notes</b>: dancing on a scrolling staff with a cello (bass) clef (<code>src/gen-notes.ts</code>)</em>
 </p>
+
+### Designing for the LED — and previewing on the mug
+
+The mug shows exactly the pixels you send. What reads well depends on the model:
+
+- **Black S1 Pro**: the LEDs sit behind the black shell, so an unlit (near-black) pixel simply
+  vanishes. Design on a **black background** and let the figures glow; outlines aren't needed. Every
+  generator makes this variant with `THEME=dark` (`packs/<name>-dark/`). A light background lights
+  up as one big glowing rectangle.
+- **White P1**: the background is the light ceramic. Design on a **light background**, and give
+  white or pale shapes a **dark outline** or they disappear (Snobben has a black outline, ear and nose).
+  Bright saturated colours read well; pale ones wash out.
+
+Preview any pack or GIF as it will look on the black S1 Pro. The mockup is drawn to scale, using
+proportions measured from PixelMug's own S1 Pro photos and the spec (a 6.21″ display that wraps
+slightly more than 180°). Each LED is about 5 % of the mug's diameter, so the outermost columns
+turn edge-on around the sides. Unlit LEDs disappear into the black shell, and lit ones glow and
+reflect on the table:
+
+```bash
+python3 scripts/mug_s1.py packs/weather-dark docs/mug/weather.webp        # a pack: cycles the six states
+python3 scripts/mug_s1.py packs/extras/notes.gif docs/mug/notes.webp       # one GIF
+python3 scripts/mug_s1.py packs/notman-dark/happy.gif face.webp --closeup  # just the display
+bash scripts/render_previews.sh                                            # re-render every README preview
+```
+
+It needs Python 3 with Pillow and numpy. For the white P1 there is `scripts/mug_mockup.py`.
 
 ## Run on the phone (Android app)
 
